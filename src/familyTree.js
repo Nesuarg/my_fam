@@ -51,7 +51,7 @@ function parseCSV(csvText) {
     const parentsRaw = row[idxParents]?.trim();
     let fatherName = '';
     let motherName = '';
-    if (parentsRaw) {
+    if (parentsRaw && parentsRaw !== '-' && parentsRaw !== '') {
       // Split by comma, 'og', or 'and'
       const parts = parentsRaw.split(/,| og | and /i).map(s => s.trim()).filter(Boolean);
       if (parts.length === 2) {
@@ -61,6 +61,7 @@ function parseCSV(csvText) {
         fatherName = parts[0];
       }
     }
+    // If parentsRaw is '-' or empty, treat as root node (no parents)
     const person = new Person(name, birth, '', fatherName, motherName);
     tree.addPerson(person);
   }
