@@ -28,10 +28,16 @@ window.onload = function() {
     reader.onload = function(evt) {
       const csvText = evt.target.result;
       const tree = parseCSV(csvText);
-      const rootName = Object.keys(tree.people)[0]; // temporarily: first person as root
       const container = document.getElementById('treeContainer');
       container.innerHTML = '';
-      renderTree(tree, rootName, container);
+      // Visualize the entire tree: show all people and their children
+      const shown = new Set();
+      for (const person of Object.values(tree.people)) {
+        if (!shown.has(person.name)) {
+          renderTree(tree, person.name, container);
+          shown.add(person.name);
+        }
+      }
     };
     reader.readAsText(file);
   });
