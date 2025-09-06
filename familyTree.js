@@ -142,7 +142,36 @@ function renderTreeSVG(root, container) {
   container.appendChild(svg);
 }
 
+
 document.addEventListener('DOMContentLoaded', () => {
   const container = document.getElementById('treeContainer');
   renderTreeSVG(familyTree, container);
+  // Zoom & pan
+  const svg = container.querySelector('svg');
+  let scale = 1;
+  let panX = 0, panY = 0;
+  let isDragging = false, dragStart = null;
+  svg.style.cursor = 'grab';
+  svg.addEventListener('wheel', e => {
+    e.preventDefault();
+    const delta = e.deltaY > 0 ? 0.9 : 1.1;
+    scale *= delta;
+    svg.setAttribute('transform', `scale(${scale}) translate(${panX},${panY})`);
+  });
+  svg.addEventListener('mousedown', e => {
+    isDragging = true;
+    dragStart = { x: e.clientX, y: e.clientY };
+    svg.style.cursor = 'grabbing';
+  });
+  window.addEventListener('mousemove', e => {
+    if (!isDragging) return;
+    panX += (e.clientX - dragStart.x) / scale;
+    panY += (e.clientY - dragStart.y) / scale;
+    dragStart = { x: e.clientX, y: e.clientY };
+    svg.setAttribute('transform', `scale(${scale}) translate(${panX},${panY})`);
+  });
+  window.addEventListener('mouseup', () => {
+    isDragging = false;
+    svg.style.cursor = 'grab';
+  });
 });
