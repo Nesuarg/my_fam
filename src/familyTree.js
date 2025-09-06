@@ -35,20 +35,33 @@ class FamilyTree {
   }
 }
 
-// CSV parser
+// CSV parser for Danish Google Forms export
 function parseCSV(csvText) {
   const lines = csvText.trim().split('\n');
   const header = lines[0].split(',');
+  // Find column indices
+  const idxName = header.findIndex(h => h.trim().toLowerCase().includes('hvem er i'));
+  const idxBirth = header.findIndex(h => h.trim().toLowerCase().includes('hvornår er du født'));
+  const idxParents = header.findIndex(h => h.trim().toLowerCase().includes('hvem er dine forældre'));
   const tree = new FamilyTree();
   for (let i = 1; i < lines.length; i++) {
     const row = lines[i].split(',');
-    const person = new Person(
-      row[0], // name
-      row[1], // birth
-      row[2], // death
-      row[3], // fatherName
-      row[4]  // motherName
-    );
+    const name = row[idxName]?.trim();
+    const birth = row[idxBirth]?.trim();
+    const parentsRaw = row[idxParents]?.trim();
+    let fatherName = '';
+    let motherName = '';
+    if (parentsRaw) {
+      // Split by comma, 'og', or 'and'
+      const parts = parentsRaw.split(/,| og | and /i).map(s => s.trim()).filter(Boolean);
+      if (parts.length === 2) {
+        fatherName = parts[0];
+        motherName = parts[1];
+      } else if (parts.length === 1) {
+        fatherName = parts[0];
+      }
+    }
+    const person = new Person(name, birth, '', fatherName, motherName);
     tree.addPerson(person);
   }
   tree.linkRelations();
