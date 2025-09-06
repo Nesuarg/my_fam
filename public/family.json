@@ -1,0 +1,83 @@
+{
+  "schemaVersion": "1.0",
+  "roots": [
+    {
+      "id": "p1",
+      "name": "Ellen Sørensen",
+      "birthDate": "1924",
+      "deathDate": "1999",
+      "tags": ["Born in Aarhus", "Immigrated to America 1952"],
+      "children": [
+        {
+          "id": "p2",
+          "name": "Karl Sørensen",
+          "birthDate": "1948-06-12",
+          "partners": [{ "name": "Grete Madsen" }],
+          "tags": ["Engineer", "Lived in Copenhagen"],
+          "children": [
+            {
+              "id": "p3",
+              "name": "Mikkel Sørensen",
+              "birthDate": "1976",
+              "partners": [{ "name": "Anna Schmidt" }],
+              "tags": ["Software Developer"],
+              "children": [
+                {
+                  "id": "p4",
+                  "name": "Emma Sørensen",
+                  "birthDate": "2005",
+                  "tags": ["Student", "Loves art"]
+                },
+                {
+                  "id": "p5",
+                  "name": "Luca Sørensen",
+                  "birthDate": "2008",
+                  "tags": ["Football player", "Youngest"]
+                }
+              ]
+            },
+            {
+              "id": "p6",
+              "name": "Ingrid Sørensen",
+              "birthDate": "1978",
+              "partners": [{ "name": "Thomas Nielsen" }],
+              "tags": ["Doctor", "Lives in Oslo"],
+              "children": [
+                {
+                  "id": "p7",
+                  "name": "Sofia Nielsen",
+                  "birthDate": "2010",
+                  "tags": ["Musician", "Plays violin"]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "p8",
+          "name": "Lars Sørensen",
+          "birthDate": "1952-03-20",
+          "deathDate": "2018",
+          "partners": [{ "name": "Birgit Hansen" }],
+          "tags": ["Teacher", "Historian"],
+          "children": [
+            {
+              "id": "p9",
+              "name": "Henrik Sørensen",
+              "birthDate": "1980",
+              "tags": ["Architect", "Lives in Stockholm"],
+              "children": [
+                {
+                  "id": "p10",
+                  "name": "Astrid Sørensen",
+                  "birthDate": "2012",
+                  "tags": ["Artist in making"]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
