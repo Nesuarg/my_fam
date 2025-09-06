@@ -2,7 +2,8 @@
 // Convert CSV to nested JSON (family tree)
 function parseParents(parentsRaw) {
   if (!parentsRaw || parentsRaw.trim() === '-' || parentsRaw.trim() === '') return [];
-  return parentsRaw.split(/,| og | and /i).map(s => s.trim()).filter(Boolean);
+  // Split on comma, 'og', '&', 'and', semicolon
+  return parentsRaw.split(/,| og | & | and |;/i).map(s => s.trim()).filter(Boolean);
 }
 
 function csvToFamilyTree(csvText) {
