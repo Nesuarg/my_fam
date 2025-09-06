@@ -66,25 +66,31 @@ function renderTreeSVG(treeRoots, container) {
   const nodeHeight = 40;
   let maxDepth = 0;
 
-  // Calculate positions recursively
-  function layout(node, depth, x) {
-    node._x = x;
+  // Calculate positions recursively, with full depth support
+  let positions = [];
+  function layout(node, depth) {
     node._y = depth * levelHeight + 40;
+    node._depth = depth;
     maxDepth = Math.max(maxDepth, depth);
+    positions.push(node);
     if (node.children && node.children.length > 0) {
-      let childX = x - ((node.children.length-1) * nodeWidth) / 2;
-      node.children.forEach((child, i) => {
-        layout(child, depth+1, childX + i*nodeWidth);
-      });
+      node.children.forEach(child => layout(child, depth+1));
     }
   }
   // Layout all roots
-  let rootX = width/2;
-  if (treeRoots.length > 1) {
-    rootX = width/(treeRoots.length+1);
-  }
-  treeRoots.forEach((root, i) => {
-    layout(root, 0, rootX + i*width/treeRoots.length);
+  treeRoots.forEach(root => layout(root, 0));
+  // Assign x positions based on order in each layer
+  let layers = {};
+  positions.forEach(node => {
+    if (!layers[node._depth]) layers[node._depth] = [];
+    layers[node._depth].push(node);
+  });
+  Object.keys(layers).forEach(depth => {
+    const nodes = layers[depth];
+    const totalWidth = (nodes.length-1)*nodeWidth;
+    nodes.forEach((node, i) => {
+      node._x = width/2 - totalWidth/2 + i*nodeWidth;
+    });
   });
 
   // Create SVG
