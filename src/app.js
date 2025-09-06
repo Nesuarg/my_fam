@@ -25,16 +25,19 @@ function csvToFamilyTree(csvText) {
     allPeople.push(person);
   }
   // Build parent-child relations
+  const usedAsChild = new Set();
   for (const person of allPeople) {
     for (const parentName of person.parents) {
       if (peopleByName[parentName] && peopleByName[parentName].length > 0) {
-        // Add child to all occurrences of parent
-        for (const parent of peopleByName[parentName]) {
-          parent.children.push(person);
-        }
+        // Add child only to the first occurrence of parent
+        peopleByName[parentName][0].children.push(person);
+        usedAsChild.add(person);
+        break;
       }
     }
   }
+  // Only show roots that are not used as child
+  const uniqueRoots = allPeople.filter(p => !usedAsChild.has(p));
   // Find all root nodes: persons not listed as child anywhere
   const childSet = new Set();
   for (const person of allPeople) {
@@ -52,8 +55,8 @@ function csvToFamilyTree(csvText) {
     delete node.parents;
     node.children.forEach(clean);
   }
-  roots.forEach(clean);
-  return roots;
+  uniqueRoots.forEach(clean);
+  return uniqueRoots;
 }
 
 // Render tree as SVG with lines between parent and children
