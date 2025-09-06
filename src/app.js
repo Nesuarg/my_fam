@@ -174,57 +174,7 @@ function renderTreeSVG(treeRoots, container) {
 
 // Handle CSV upload
 window.onload = function() {
-      // Debug: show stats and all persons, and parent matching issues
-      const statsDiv = document.createElement('div');
-      statsDiv.style.marginTop = '2rem';
-      statsDiv.style.background = '#d0f0c0';
-      statsDiv.style.padding = '1rem';
-      statsDiv.style.borderRadius = '8px';
-      statsDiv.innerHTML = `<h3 style='color:#764ba2'>Debug: Statistik</h3>`;
-      let allPersons = [];
-      tree.forEach(root => {
-        function collect(person) {
-          allPersons.push(person);
-          if (person.children) person.children.forEach(collect);
-        }
-        collect(root);
-      });
-      const roots = tree.map(r => r.name);
-      statsDiv.innerHTML += `<p>Antal personer: ${allPersons.length}</p>`;
-      statsDiv.innerHTML += `<p>Rødder: ${roots.join(', ')}</p>`;
-      statsDiv.innerHTML += `<h4>Alle personer og forældre</h4>`;
-      statsDiv.innerHTML += `<table style='width:100%;font-size:0.9em;background:#fff;border-collapse:collapse'><tr><th>Navn</th><th>Født</th><th>Forældre (raw)</th><th>Root?</th></tr>`;
-      allPersons.forEach(person => {
-        statsDiv.innerHTML += `<tr><td>${person.name}</td><td>${person.birthdate}</td><td>${person.parents ? person.parents.join(' | ') : ''}</td><td>${person.parents && person.parents.length === 0 ? 'Ja' : 'Nej'}</td></tr>`;
-      });
-      statsDiv.innerHTML += `</table>`;
-      // Brug window._fam_debug for detaljeret debug
-      const famDebug = window._fam_debug || {};
-      if (famDebug.unmatchedParents && famDebug.unmatchedParents.length > 0) {
-        statsDiv.innerHTML += `<h4 style='color:#a00'>Advarsel: Forældre der ikke matcher nogen person</h4>`;
-        statsDiv.innerHTML += `<table style='width:100%;font-size:0.9em;background:#fff;border-collapse:collapse'><tr><th>Barn</th><th>Forælder (raw)</th></tr>`;
-        famDebug.unmatchedParents.forEach(row => {
-          statsDiv.innerHTML += `<tr><td>${row.child}</td><td>${row.parent}</td></tr>`;
-        });
-        statsDiv.innerHTML += `</table>`;
-      }
-      if (famDebug.circular && famDebug.circular.length > 0) {
-        statsDiv.innerHTML += `<h4 style='color:#a00'>Advarsel: Cirkulære relationer</h4>`;
-        statsDiv.innerHTML += `<ul>`;
-        famDebug.circular.forEach(name => {
-          statsDiv.innerHTML += `<li>${name}</li>`;
-        });
-        statsDiv.innerHTML += `</ul>`;
-      }
-      container.appendChild(statsDiv);
-  // Show JSON output for the tree
-  const jsonDiv = document.createElement('div');
-  jsonDiv.style.marginTop = '2rem';
-  jsonDiv.style.background = '#e0e0e0';
-  jsonDiv.style.padding = '1rem';
-  jsonDiv.style.borderRadius = '8px';
-  jsonDiv.innerHTML = `<h3 style='color:#764ba2'>JSON Output</h3><pre style='font-size:0.9em;max-height:400px;overflow:auto;'>${JSON.stringify(tree, null, 2)}</pre>`;
-  container.appendChild(jsonDiv);
+window.onload = function() {
   const input = document.getElementById('csvInput');
   input.addEventListener('change', function(e) {
     const file = e.target.files[0];
@@ -245,28 +195,17 @@ window.onload = function() {
         debugDiv.style.background = '#ffe066';
         debugDiv.style.padding = '1rem';
         debugDiv.style.borderRadius = '8px';
-        debugDiv.innerHTML = `<h3 style='color:#764ba2'>Debug: Roots and Children</h3>`;
-        tree.forEach(root => {
-          debugDiv.innerHTML += `<strong>${root.name}</strong> (${root.birthdate})<ul>`;
-          if (root.children.length === 0) {
-            debugDiv.innerHTML += '<li><em>No children</em></li>';
-          } else {
-            root.children.forEach(child => {
-              debugDiv.innerHTML += `<li>${child.name} (${child.birthdate})`;
-              debugDiv.innerHTML += `<br><small>Parent match: ${child.parents.map(p => norm(p)).join(', ')}</small></li>`;
-            });
-          }
-          debugDiv.innerHTML += '</ul>';
-        });
-        // Extra debug: show all persons and their parents
-        debugDiv.innerHTML += `<h4 style='color:#222'>Alle personer og forældre (raw & normaliseret)</h4>`;
-        debugDiv.innerHTML += `<table style='width:100%;font-size:0.9em;background:#fff;border-collapse:collapse'><tr><th>Navn</th><th>Forældre (raw)</th><th>Forældre (norm)</th></tr>`;
-        tree.forEach(root => {
-          [root, ...root.children].forEach(person => {
-            debugDiv.innerHTML += `<tr><td>${person.name}</td><td>${person.parents.join(' | ')}</td><td>${person.parents.map(p => norm(p)).join(' | ')}</td></tr>`;
+        debugDiv.innerHTML = `<h3 style='color:#764ba2'>Debug: Roots og manglende forældre</h3>`;
+        debugDiv.innerHTML += `<p>Antal personer: ${window._fam_debug.allPeople.length}</p>`;
+        debugDiv.innerHTML += `<p>Rødder: ${window._fam_debug.roots.map(r => r.name).join(', ')}</p>`;
+        if (window._fam_debug.unmatchedParents.length > 0) {
+          debugDiv.innerHTML += `<h4 style='color:#a00'>Forældre der ikke matcher nogen person</h4>`;
+          debugDiv.innerHTML += `<table style='width:100%;font-size:0.9em;background:#fff;border-collapse:collapse'><tr><th>Barn</th><th>Forælder (raw)</th></tr>`;
+          window._fam_debug.unmatchedParents.forEach(row => {
+            debugDiv.innerHTML += `<tr><td>${row.child}</td><td>${row.parent}</td></tr>`;
           });
-        });
-        debugDiv.innerHTML += `</table>`;
+          debugDiv.innerHTML += `</table>`;
+        }
         container.appendChild(debugDiv);
       }
     };
