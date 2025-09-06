@@ -1,0 +1,5 @@
+name,birth,death,fatherName,motherName
+Peter Hansen,1950,,,
+Anna Jensen,1952,,,
+Ole Hansen,1975,,,Peter Hansen,Anna Jensen
+Mette Hansen,1978,,,Peter Hansen,Anna Jensen
