@@ -172,6 +172,25 @@ window.onload = function() {
         container.innerHTML = '<p>No root found (no person without parents)</p>';
       } else {
         renderTreeSVG(tree, container);
+        // Debug view
+        const debugDiv = document.createElement('div');
+        debugDiv.style.marginTop = '2rem';
+        debugDiv.style.background = '#ffe066';
+        debugDiv.style.padding = '1rem';
+        debugDiv.style.borderRadius = '8px';
+        debugDiv.innerHTML = `<h3 style='color:#764ba2'>Debug: Roots and Children</h3>`;
+        tree.forEach(root => {
+          debugDiv.innerHTML += `<strong>${root.name}</strong> (${root.birthdate})<ul>`;
+          if (root.children.length === 0) {
+            debugDiv.innerHTML += '<li><em>No children</em></li>';
+          } else {
+            root.children.forEach(child => {
+              debugDiv.innerHTML += `<li>${child.name} (${child.birthdate})</li>`;
+            });
+          }
+          debugDiv.innerHTML += '</ul>';
+        });
+        container.appendChild(debugDiv);
       }
     };
     reader.readAsText(file);
