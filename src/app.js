@@ -166,6 +166,14 @@ function renderTreeSVG(treeRoots, container) {
 
 // Handle CSV upload
 window.onload = function() {
+  // Show JSON output for the tree
+  const jsonDiv = document.createElement('div');
+  jsonDiv.style.marginTop = '2rem';
+  jsonDiv.style.background = '#e0e0e0';
+  jsonDiv.style.padding = '1rem';
+  jsonDiv.style.borderRadius = '8px';
+  jsonDiv.innerHTML = `<h3 style='color:#764ba2'>JSON Output</h3><pre style='font-size:0.9em;max-height:400px;overflow:auto;'>${JSON.stringify(tree, null, 2)}</pre>`;
+  container.appendChild(jsonDiv);
   const input = document.getElementById('csvInput');
   input.addEventListener('change', function(e) {
     const file = e.target.files[0];
