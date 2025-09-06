@@ -30,12 +30,13 @@ window.onload = function() {
       const tree = parseCSV(csvText);
       const container = document.getElementById('treeContainer');
       container.innerHTML = '';
-      // Visualize the entire tree: show all people and their children
-      const shown = new Set();
-      for (const person of Object.values(tree.people)) {
-        if (!shown.has(person.name)) {
-          renderTree(tree, person.name, container);
-          shown.add(person.name);
+      // Visualize only from root nodes (no parents)
+      const roots = Object.values(tree.people).filter(p => !p.fatherName && !p.motherName);
+      if (roots.length === 0) {
+        container.innerHTML = '<p>No root found (no person without parents)</p>';
+      } else {
+        for (const root of roots) {
+          renderTree(tree, root.name, container);
         }
       }
     };
