@@ -94,8 +94,9 @@ function renderTreeSVG(root, container) {
         line.setAttribute('y1', node._y + 60);
         line.setAttribute('x2', child._x + 90);
         line.setAttribute('y2', child._y);
-        line.setAttribute('stroke', '#764ba2');
-        line.setAttribute('stroke-width', '3');
+        line.setAttribute('stroke', '#4e2e8e');
+        line.setAttribute('stroke-width', '4');
+        line.setAttribute('opacity', '0.85');
         line.setAttribute('marker-end', 'url(#arrowhead)');
         svg.appendChild(line);
       });
@@ -124,21 +125,36 @@ function renderTreeSVG(root, container) {
     const rect = document.createElementNS(svgNS, 'rect');
     rect.setAttribute('width', 180);
     rect.setAttribute('height', 60);
-    rect.setAttribute('rx', 14);
+    rect.setAttribute('rx', 18);
     rect.setAttribute('fill', '#fff');
     rect.setAttribute('stroke', '#764ba2');
     rect.setAttribute('stroke-width', '3');
+    rect.setAttribute('filter', 'url(#shadow)');
     group.appendChild(rect);
     const text = document.createElementNS(svgNS, 'text');
     text.setAttribute('x', 90);
-    text.setAttribute('y', 30);
+    text.setAttribute('y', 28);
     text.setAttribute('text-anchor', 'middle');
-    text.setAttribute('font-size', '16');
-    text.setAttribute('fill', '#222');
-    text.textContent = `${node.navn} (${node.født})`;
+    text.setAttribute('font-size', '18');
+    text.setAttribute('font-weight', 'bold');
+    text.setAttribute('fill', '#4e2e8e');
+    text.textContent = node.navn;
     group.appendChild(text);
+    const birthText = document.createElementNS(svgNS, 'text');
+    birthText.setAttribute('x', 90);
+    birthText.setAttribute('y', 48);
+    birthText.setAttribute('text-anchor', 'middle');
+    birthText.setAttribute('font-size', '14');
+    birthText.setAttribute('fill', '#222');
+    birthText.textContent = `Født: ${node.født}`;
+    group.appendChild(birthText);
     svg.appendChild(group);
   });
+  // Shadow filter
+  const filter = document.createElementNS(svgNS, 'filter');
+  filter.setAttribute('id', 'shadow');
+  filter.innerHTML = '<feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#764ba2" flood-opacity="0.12"/>';
+  svg.appendChild(filter);
   container.appendChild(svg);
 }
 
