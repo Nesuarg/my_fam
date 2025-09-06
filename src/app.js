@@ -7,70 +7,72 @@ function parseParents(parentsRaw) {
 }
 
 function csvToFamilyTree(csvText) {
+  // --- NY ROBUST ALGORITME ---
   const lines = csvText.trim().split('\n');
   const header = lines[0].split(',');
   const idxName = header.findIndex(h => h.toLowerCase().includes('hvem er i'));
   const idxBirth = header.findIndex(h => h.toLowerCase().includes('hvornår er du født'));
   const idxParents = header.findIndex(h => h.toLowerCase().includes('hvem er dine forældre'));
-  // Support multiple people with same name
-  const peopleByName = {};
+  // Tolerant normalisering
+  function norm(str) {
+    return (str || '').toLowerCase().replace(/ og | & | and |;/g, ' ').replace(/,/g, '').replace(/\s+/g, ' ').trim();
+  }
+  // 1. Byg person-objekter
   const allPeople = [];
+  const nameMap = {};
   for (let i = 1; i < lines.length; i++) {
     const row = lines[i].split(',');
     const name = row[idxName]?.trim();
     const birthdate = row[idxBirth]?.trim();
     const parents = parseParents(row[idxParents]);
-    const person = { name, birthdate, parents, children: [] };
-    if (!peopleByName[name]) peopleByName[name] = [];
-    peopleByName[name].push(person);
+    const person = { name, birthdate, parents, children: [], _norm: norm(name) };
     allPeople.push(person);
+    nameMap[person._norm] = person;
   }
-  // Helper for normalized name
-  function norm(str) {
-    return (str || '')
-      .toLowerCase()
-      .replace(/\s+/g, ' ')
-      .replace(/ og | & /g, ' and ')
-      .replace(/\band\b/g, '')
-      .replace(/,/g, '')
-      .replace(/\s+/g, ' ')
-      .trim();
-  }
-  // Build lookup for all persons by normalized name
-  const nameToPersons = {};
-  allPeople.forEach(p => {
-    const n = norm(p.name);
-    if (!nameToPersons[n]) nameToPersons[n] = [];
-    nameToPersons[n].push(p);
-  });
-  // Recursive function to build children tree
-  function buildChildren(person) {
-    person.children = [];
-    allPeople.forEach(candidate => {
-      candidate.parents.forEach(parentName => {
-        if (norm(parentName) === norm(person.name)) {
-          person.children.push(buildChildren(candidate));
-        }
-      });
+  // 2. Tilføj børn til forældre
+  let unmatchedParents = [];
+  allPeople.forEach(child => {
+    child.parents.forEach(parentRaw => {
+      const parentNorm = norm(parentRaw);
+      if (parentNorm && nameMap[parentNorm]) {
+        nameMap[parentNorm].children.push(child);
+      } else if (parentNorm) {
+        unmatchedParents.push({child: child.name, parent: parentRaw});
+      }
     });
-    return person;
-  }
-  // Find all roots: persons with no parents
-  let roots = allPeople.filter(p => p.parents.length === 0);
-  // Debug: show root count
-  if (roots.length === 0) {
-    // Fallback: show all persons as roots
-    roots = allPeople;
-  }
-  // Build tree recursively from roots
-  const tree = roots.map(root => buildChildren(root));
-  // Remove parent references from children
+  });
+  // 3. Find rødder (ingen forældre eller forældre ikke i listen)
+  let roots = allPeople.filter(p => p.parents.length === 0 || p.parents.every(parentRaw => !nameMap[norm(parentRaw)]));
+  // 4. Debug: cirkulære relationer
+  let circular = [];
+  allPeople.forEach(p => {
+    if (p.parents.some(parentRaw => norm(parentRaw) === p._norm)) {
+      circular.push(p.name);
+    }
+  });
+  // 5. Fjern interne felter
   function clean(node) {
-    delete node.parents;
-    if (node.children) node.children.forEach(clean);
+    delete node._norm;
+    // Fjern evt. duplikerede børn
+    if (node.children && node.children.length > 0) {
+      let seen = new Set();
+      node.children = node.children.filter(c => {
+        if (seen.has(c._norm)) return false;
+        seen.add(c._norm);
+        return true;
+      });
+      node.children.forEach(clean);
+    }
   }
-  tree.forEach(clean);
-  return tree;
+  roots.forEach(clean);
+  // 6. Debug-output
+  window._fam_debug = {
+    allPeople,
+    roots,
+    unmatchedParents,
+    circular
+  };
+  return roots;
 }
 
 // Render tree as SVG with lines between parent and children
@@ -196,24 +198,23 @@ window.onload = function() {
         statsDiv.innerHTML += `<tr><td>${person.name}</td><td>${person.birthdate}</td><td>${person.parents ? person.parents.join(' | ') : ''}</td><td>${person.parents && person.parents.length === 0 ? 'Ja' : 'Nej'}</td></tr>`;
       });
       statsDiv.innerHTML += `</table>`;
-      // Find parents that do not match any person
-      const norm = str => (str || '').toLowerCase().replace(/ og | & | and |;/g, ' ').replace(/,/g, '').replace(/\s+/g, ' ').trim();
-      let unmatchedParents = [];
-      allPersons.forEach(person => {
-        person.parents.forEach(parentRaw => {
-          const parentNorm = norm(parentRaw);
-          if (parentNorm && !allPersons.some(p => norm(p.name) === parentNorm)) {
-            unmatchedParents.push({child: person.name, parent: parentRaw});
-          }
-        });
-      });
-      if (unmatchedParents.length > 0) {
+      // Brug window._fam_debug for detaljeret debug
+      const famDebug = window._fam_debug || {};
+      if (famDebug.unmatchedParents && famDebug.unmatchedParents.length > 0) {
         statsDiv.innerHTML += `<h4 style='color:#a00'>Advarsel: Forældre der ikke matcher nogen person</h4>`;
         statsDiv.innerHTML += `<table style='width:100%;font-size:0.9em;background:#fff;border-collapse:collapse'><tr><th>Barn</th><th>Forælder (raw)</th></tr>`;
-        unmatchedParents.forEach(row => {
+        famDebug.unmatchedParents.forEach(row => {
           statsDiv.innerHTML += `<tr><td>${row.child}</td><td>${row.parent}</td></tr>`;
         });
         statsDiv.innerHTML += `</table>`;
+      }
+      if (famDebug.circular && famDebug.circular.length > 0) {
+        statsDiv.innerHTML += `<h4 style='color:#a00'>Advarsel: Cirkulære relationer</h4>`;
+        statsDiv.innerHTML += `<ul>`;
+        famDebug.circular.forEach(name => {
+          statsDiv.innerHTML += `<li>${name}</li>`;
+        });
+        statsDiv.innerHTML += `</ul>`;
       }
       container.appendChild(statsDiv);
   // Show JSON output for the tree
