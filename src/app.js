@@ -194,12 +194,20 @@ window.onload = function() {
           } else {
             root.children.forEach(child => {
               debugDiv.innerHTML += `<li>${child.name} (${child.birthdate})`;
-              // Show parent match info
               debugDiv.innerHTML += `<br><small>Parent match: ${child.parents.map(p => norm(p)).join(', ')}</small></li>`;
             });
           }
           debugDiv.innerHTML += '</ul>';
         });
+        // Extra debug: show all persons and their parents
+        debugDiv.innerHTML += `<h4 style='color:#222'>Alle personer og forældre (raw & normaliseret)</h4>`;
+        debugDiv.innerHTML += `<table style='width:100%;font-size:0.9em;background:#fff;border-collapse:collapse'><tr><th>Navn</th><th>Forældre (raw)</th><th>Forældre (norm)</th></tr>`;
+        tree.forEach(root => {
+          [root, ...root.children].forEach(person => {
+            debugDiv.innerHTML += `<tr><td>${person.name}</td><td>${person.parents.join(' | ')}</td><td>${person.parents.map(p => norm(p)).join(' | ')}</td></tr>`;
+          });
+        });
+        debugDiv.innerHTML += `</table>`;
         container.appendChild(debugDiv);
       }
     };
