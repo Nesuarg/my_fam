@@ -62,13 +62,16 @@ const familyTree = { /* ...samme data som før... */
 // SVG flowchart renderer
 function layoutTree(node, depth = 0, x = 0, positions = [], siblings = 1, index = 0) {
   // Calculate position for this node
+  // Øg afstand mellem noder
+  const NODE_WIDTH = 220;
+  const NODE_HEIGHT = 110;
   node._x = x;
-  node._y = depth * 120 + 40;
+  node._y = depth * NODE_HEIGHT + 40;
   positions.push(node);
   if (node.børn && node.børn.length > 0) {
-    let childX = x - ((node.børn.length-1)*180)/2;
+    let childX = x - ((node.børn.length-1)*NODE_WIDTH)/2;
     node.børn.forEach((child, i) => {
-      layoutTree(child, depth+1, childX + i*180, positions, node.børn.length, i);
+      layoutTree(child, depth+1, childX + i*NODE_WIDTH, positions, node.børn.length, i);
     });
   }
   return positions;
