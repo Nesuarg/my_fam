@@ -1,12 +1,14 @@
 // Family tree data (nested JSON)
-const familyTree = {
+const familyTree = { /* ...samme data som før... */
   "navn": "Niels Peter og Dorthea",
   "født": "1919-08-24",
   "børn": [
+    // ...samme børn som før...
     { "navn": "Karen og Tomas", "født": "1953-01-09", "børn": [
       { "navn": "Emil", "født": "1990-07-26" },
       { "navn": "Simon og Trine", "født": "1992-09-30" }
     ]},
+    // ... resten uændret ...
     { "navn": "Ruth og Jesper", "født": "1957-01-14", "børn": [
       { "navn": "Ejgil", "født": "1989-07-08" },
       { "navn": "Alfred", "født": "1991-08-19" }
@@ -57,20 +59,90 @@ const familyTree = {
   ]
 };
 
-function renderTree(node, container) {
-  const div = document.createElement('div');
-  div.className = 'node';
-  div.innerHTML = `<strong>${node.navn}</strong><br>Født: ${node.født}`;
-  container.appendChild(div);
+// SVG flowchart renderer
+function layoutTree(node, depth = 0, x = 0, positions = [], siblings = 1, index = 0) {
+  // Calculate position for this node
+  node._x = x;
+  node._y = depth * 120 + 40;
+  positions.push(node);
   if (node.børn && node.børn.length > 0) {
-    const childrenDiv = document.createElement('div');
-    childrenDiv.className = 'level';
-    node.børn.forEach(child => renderTree(child, childrenDiv));
-    container.appendChild(childrenDiv);
+    let childX = x - ((node.børn.length-1)*180)/2;
+    node.børn.forEach((child, i) => {
+      layoutTree(child, depth+1, childX + i*180, positions, node.børn.length, i);
+    });
   }
+  return positions;
+}
+
+function renderTreeSVG(root, container) {
+  container.innerHTML = '';
+  const positions = layoutTree(root);
+  const width = 180 * Math.max(positions.length, 5);
+  const height = Math.max(...positions.map(n => n._y)) + 160;
+  const svgNS = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(svgNS, 'svg');
+  svg.setAttribute('width', width);
+  svg.setAttribute('height', height);
+  svg.style.display = 'block';
+  svg.style.margin = '0 auto';
+  // Draw arrows (lines)
+  positions.forEach(node => {
+    if (node.børn && node.børn.length > 0) {
+      node.børn.forEach(child => {
+        const line = document.createElementNS(svgNS, 'line');
+        line.setAttribute('x1', node._x + 90);
+        line.setAttribute('y1', node._y + 60);
+        line.setAttribute('x2', child._x + 90);
+        line.setAttribute('y2', child._y);
+        line.setAttribute('stroke', '#764ba2');
+        line.setAttribute('stroke-width', '3');
+        line.setAttribute('marker-end', 'url(#arrowhead)');
+        svg.appendChild(line);
+      });
+    }
+  });
+  // Arrowhead marker
+  const marker = document.createElementNS(svgNS, 'marker');
+  marker.setAttribute('id', 'arrowhead');
+  marker.setAttribute('markerWidth', '10');
+  marker.setAttribute('markerHeight', '7');
+  marker.setAttribute('refX', '5');
+  marker.setAttribute('refY', '3.5');
+  marker.setAttribute('orient', 'auto');
+  marker.setAttribute('markerUnits', 'strokeWidth');
+  const arrowPath = document.createElementNS(svgNS, 'path');
+  arrowPath.setAttribute('d', 'M0,0 L10,3.5 L0,7 Z');
+  arrowPath.setAttribute('fill', '#764ba2');
+  marker.appendChild(arrowPath);
+  const defs = document.createElementNS(svgNS, 'defs');
+  defs.appendChild(marker);
+  svg.appendChild(defs);
+  // Draw nodes
+  positions.forEach(node => {
+    const group = document.createElementNS(svgNS, 'g');
+    group.setAttribute('transform', `translate(${node._x},${node._y})`);
+    const rect = document.createElementNS(svgNS, 'rect');
+    rect.setAttribute('width', 180);
+    rect.setAttribute('height', 60);
+    rect.setAttribute('rx', 14);
+    rect.setAttribute('fill', '#fff');
+    rect.setAttribute('stroke', '#764ba2');
+    rect.setAttribute('stroke-width', '3');
+    group.appendChild(rect);
+    const text = document.createElementNS(svgNS, 'text');
+    text.setAttribute('x', 90);
+    text.setAttribute('y', 30);
+    text.setAttribute('text-anchor', 'middle');
+    text.setAttribute('font-size', '16');
+    text.setAttribute('fill', '#222');
+    text.textContent = `${node.navn} (${node.født})`;
+    group.appendChild(text);
+    svg.appendChild(group);
+  });
+  container.appendChild(svg);
 }
 
 document.addEventListener('DOMContentLoaded', () => {
   const container = document.getElementById('treeContainer');
-  renderTree(familyTree, container);
+  renderTreeSVG(familyTree, container);
 });
