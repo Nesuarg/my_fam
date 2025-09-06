@@ -54,7 +54,7 @@ function csvToFamilyTree(csvText) {
 function renderTreeSVG(treeRoots, container) {
   container.innerHTML = '';
   const svgNS = 'http://www.w3.org/2000/svg';
-  const width = 1200;
+  let width = 1200;
   const levelHeight = 80;
   const nodeWidth = 180;
   const nodeHeight = 40;
@@ -79,6 +79,12 @@ function renderTreeSVG(treeRoots, container) {
     if (!layers[node._depth]) layers[node._depth] = [];
     layers[node._depth].push(node);
   });
+  // Find widest layer
+  let maxNodes = 0;
+  Object.values(layers).forEach(nodes => {
+    if (nodes.length > maxNodes) maxNodes = nodes.length;
+  });
+  width = Math.max(1200, maxNodes * nodeWidth + 100);
   Object.keys(layers).forEach(depth => {
     const nodes = layers[depth];
     const totalWidth = (nodes.length-1)*nodeWidth;
