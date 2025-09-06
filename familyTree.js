@@ -77,23 +77,31 @@ function layoutTree(node, depth = 0, x = 0, positions = [], siblings = 1, index 
 function renderTreeSVG(root, container) {
   container.innerHTML = '';
   const positions = layoutTree(root);
-  const width = 180 * Math.max(positions.length, 5);
-  const height = Math.max(...positions.map(n => n._y)) + 160;
+  // Find min/max x og y for alle noder
+  const minX = Math.min(...positions.map(n => n._x));
+  const maxX = Math.max(...positions.map(n => n._x));
+  const minY = Math.min(...positions.map(n => n._y));
+  const maxY = Math.max(...positions.map(n => n._y));
+  const width = (maxX - minX) + 220;
+  const height = (maxY - minY) + 160;
   const svgNS = 'http://www.w3.org/2000/svg';
   const svg = document.createElementNS(svgNS, 'svg');
   svg.setAttribute('width', width);
   svg.setAttribute('height', height);
   svg.style.display = 'block';
   svg.style.margin = '0 auto';
+  // Centrer alt indhold i SVG
+  const offsetX = 110 - minX;
+  const offsetY = 80 - minY;
   // Draw arrows (lines)
   positions.forEach(node => {
     if (node.børn && node.børn.length > 0) {
       node.børn.forEach(child => {
         const line = document.createElementNS(svgNS, 'line');
-        line.setAttribute('x1', node._x + 90);
-        line.setAttribute('y1', node._y + 60);
-        line.setAttribute('x2', child._x + 90);
-        line.setAttribute('y2', child._y);
+        line.setAttribute('x1', node._x + 90 + offsetX);
+        line.setAttribute('y1', node._y + 60 + offsetY);
+        line.setAttribute('x2', child._x + 90 + offsetX);
+        line.setAttribute('y2', child._y + offsetY);
         line.setAttribute('stroke', '#4e2e8e');
         line.setAttribute('stroke-width', '4');
         line.setAttribute('opacity', '0.85');
@@ -121,7 +129,7 @@ function renderTreeSVG(root, container) {
   // Draw nodes
   positions.forEach(node => {
     const group = document.createElementNS(svgNS, 'g');
-    group.setAttribute('transform', `translate(${node._x},${node._y})`);
+    group.setAttribute('transform', `translate(${node._x + offsetX},${node._y + offsetY})`);
     const rect = document.createElementNS(svgNS, 'rect');
     rect.setAttribute('width', 180);
     rect.setAttribute('height', 60);
