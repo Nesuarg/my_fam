@@ -48,7 +48,7 @@ function csvToFamilyTree(csvText) {
       }
     });
   });
-  // Find roots (no parents)
+  // Find all roots: persons with no parents
   const roots = allPeople.filter(p => p.parents.length === 0);
   // Remove parent references from children
   function clean(node) {
