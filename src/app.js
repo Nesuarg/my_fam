@@ -1,18 +1,57 @@
 // Frontend logic to display the family tree
-import { parseCSV } from './familyTree.js';
+// Convert CSV to nested JSON (family tree)
+function parseParents(parentsRaw) {
+  if (!parentsRaw || parentsRaw.trim() === '-' || parentsRaw.trim() === '') return [];
+  return parentsRaw.split(/,| og | and /i).map(s => s.trim()).filter(Boolean);
+}
 
-function renderTree(tree, rootName, container) {
-  const person = tree.people[rootName];
-  if (!person) return;
+function csvToFamilyTree(csvText) {
+  const lines = csvText.trim().split('\n');
+  const header = lines[0].split(',');
+  const idxName = header.findIndex(h => h.toLowerCase().includes('hvem er i'));
+  const idxBirth = header.findIndex(h => h.toLowerCase().includes('hvornår er du født'));
+  const idxParents = header.findIndex(h => h.toLowerCase().includes('hvem er dine forældre'));
+  const people = {};
+  for (let i = 1; i < lines.length; i++) {
+    const row = lines[i].split(',');
+    const name = row[idxName]?.trim();
+    const birthdate = row[idxBirth]?.trim();
+    const parents = parseParents(row[idxParents]);
+    people[name] = { name, birthdate, parents, children: [] };
+  }
+  // Build tree
+  const roots = [];
+  for (const person of Object.values(people)) {
+    if (person.parents.length === 0) {
+      roots.push(person);
+    } else {
+      for (const parentName of person.parents) {
+        if (people[parentName]) {
+          people[parentName].children.push(person);
+        }
+      }
+    }
+  }
+  // Remove parent references from children
+  function clean(node) {
+    delete node.parents;
+    node.children.forEach(clean);
+  }
+  roots.forEach(clean);
+  return roots;
+}
+
+// Render tree from JSON
+function renderTreeJSON(node, container) {
   const el = document.createElement('div');
   el.className = 'person';
-  el.innerHTML = `<strong>${person.name}</strong> (${person.birth}${person.death ? ' - ' + person.death : ''})`;
+  el.innerHTML = `<strong>${node.name}</strong> (${node.birthdate})`;
   container.appendChild(el);
-  if (person.children.length > 0) {
+  if (node.children && node.children.length > 0) {
     const childrenEl = document.createElement('div');
     childrenEl.className = 'children';
-    for (const child of person.children) {
-      renderTree(tree, child.name, childrenEl);
+    for (const child of node.children) {
+      renderTreeJSON(child, childrenEl);
     }
     container.appendChild(childrenEl);
   }
@@ -27,16 +66,14 @@ window.onload = function() {
     const reader = new FileReader();
     reader.onload = function(evt) {
       const csvText = evt.target.result;
-      const tree = parseCSV(csvText);
+      const tree = csvToFamilyTree(csvText);
       const container = document.getElementById('treeContainer');
       container.innerHTML = '';
-      // Visualize only from root nodes (no parents)
-      const roots = Object.values(tree.people).filter(p => !p.fatherName && !p.motherName);
-      if (roots.length === 0) {
+      if (tree.length === 0) {
         container.innerHTML = '<p>No root found (no person without parents)</p>';
       } else {
-        for (const root of roots) {
-          renderTree(tree, root.name, container);
+        for (const root of tree) {
+          renderTreeJSON(root, container);
         }
       }
     };
