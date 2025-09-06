@@ -19,17 +19,20 @@ function csvToFamilyTree(csvText) {
     const parents = parseParents(row[idxParents]);
     people[name] = { name, birthdate, parents, children: [] };
   }
-  // Build tree
-  const roots = [];
+  // Build parent-child relations
   for (const person of Object.values(people)) {
-    if (person.parents.length === 0) {
-      roots.push(person);
-    } else {
-      for (const parentName of person.parents) {
-        if (people[parentName]) {
-          people[parentName].children.push(person);
-        }
+    for (const parentName of person.parents) {
+      if (people[parentName]) {
+        people[parentName].children.push(person);
       }
+    }
+  }
+  // Find the true root: person with no parents, but is parent to others
+  let root = null;
+  for (const person of Object.values(people)) {
+    if (person.parents.length === 0 && person.children.length > 0) {
+      root = person;
+      break;
     }
   }
   // Remove parent references from children
@@ -37,8 +40,15 @@ function csvToFamilyTree(csvText) {
     delete node.parents;
     node.children.forEach(clean);
   }
-  roots.forEach(clean);
-  return roots;
+  if (root) {
+    clean(root);
+    return [root];
+  } else {
+    // fallback: show all with no parents
+    const roots = Object.values(people).filter(p => p.parents.length === 0);
+    roots.forEach(clean);
+    return roots;
+  }
 }
 
 // Render tree from JSON
