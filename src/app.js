@@ -28,8 +28,10 @@ function csvToFamilyTree(csvText) {
   for (const person of allPeople) {
     for (const parentName of person.parents) {
       if (peopleByName[parentName] && peopleByName[parentName].length > 0) {
-        // Always add child to the first occurrence of parent
-        peopleByName[parentName][0].children.push(person);
+        // Add child to all occurrences of parent
+        for (const parent of peopleByName[parentName]) {
+          parent.children.push(person);
+        }
       }
     }
   }
