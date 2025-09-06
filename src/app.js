@@ -172,6 +172,31 @@ function renderTreeSVG(treeRoots, container) {
 
 // Handle CSV upload
 window.onload = function() {
+      // Debug: show stats and all persons
+      const statsDiv = document.createElement('div');
+      statsDiv.style.marginTop = '2rem';
+      statsDiv.style.background = '#d0f0c0';
+      statsDiv.style.padding = '1rem';
+      statsDiv.style.borderRadius = '8px';
+      statsDiv.innerHTML = `<h3 style='color:#764ba2'>Debug: Statistik</h3>`;
+      statsDiv.innerHTML += `<p>Antal personer: ${tree.flat().length}</p>`;
+      let allPersons = [];
+      tree.forEach(root => {
+        function collect(person) {
+          allPersons.push(person);
+          if (person.children) person.children.forEach(collect);
+        }
+        collect(root);
+      });
+      const roots = tree.map(r => r.name);
+      statsDiv.innerHTML += `<p>Rødder: ${roots.join(', ')}</p>`;
+      statsDiv.innerHTML += `<h4>Alle personer og forældre</h4>`;
+      statsDiv.innerHTML += `<table style='width:100%;font-size:0.9em;background:#fff;border-collapse:collapse'><tr><th>Navn</th><th>Født</th><th>Forældre (raw)</th><th>Root?</th></tr>`;
+      allPersons.forEach(person => {
+        statsDiv.innerHTML += `<tr><td>${person.name}</td><td>${person.birthdate}</td><td>${person.parents ? person.parents.join(' | ') : ''}</td><td>${person.parents && person.parents.length === 0 ? 'Ja' : 'Nej'}</td></tr>`;
+      });
+      statsDiv.innerHTML += `</table>`;
+      container.appendChild(statsDiv);
   // Show JSON output for the tree
   const jsonDiv = document.createElement('div');
   jsonDiv.style.marginTop = '2rem';
