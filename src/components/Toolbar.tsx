@@ -9,6 +9,7 @@ interface ToolbarProps {
   onOrientationChange: (orientation: 'vertical' | 'horizontal') => void;
   nodeSize: 'small' | 'medium' | 'large';
   onNodeSizeChange: (size: 'small' | 'medium' | 'large') => void;
+  onExportPNG?: () => void;
 }
 
 const Toolbar: React.FC<ToolbarProps> = ({
@@ -20,10 +21,14 @@ const Toolbar: React.FC<ToolbarProps> = ({
   onOrientationChange,
   nodeSize,
   onNodeSizeChange,
+  onExportPNG,
 }) => {
   const handleExportPNG = () => {
-    // This will be implemented with the export utility
-    console.log('Export PNG functionality will be implemented');
+    if (onExportPNG) {
+      onExportPNG();
+    } else {
+      console.log('Export PNG functionality not connected');
+    }
   };
 
   return (

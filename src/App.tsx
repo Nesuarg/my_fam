@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { FamilyDocument } from './types/family';
 import TreeCanvas from './components/TreeCanvas';
 import Toolbar from './components/Toolbar';
+import { exportToPNG } from './utils/exportPng';
 
 function App() {
   const [familyData, setFamilyData] = useState<FamilyDocument | null>(null);
@@ -11,6 +12,7 @@ function App() {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [orientation, setOrientation] = useState<'vertical' | 'horizontal'>('vertical');
   const [nodeSize, setNodeSize] = useState<'small' | 'medium' | 'large'>('medium');
+  const treeCanvasRef = useRef<{ getSVGElement: () => SVGSVGElement | null }>(null);
 
   useEffect(() => {
     const loadFamilyData = async () => {
@@ -45,6 +47,18 @@ function App() {
       document.documentElement.classList.remove('dark');
     }
   }, [isDarkMode]);
+
+  const handleExportPNG = async () => {
+    const svgElement = treeCanvasRef.current?.getSVGElement();
+    if (svgElement) {
+      try {
+        await exportToPNG(svgElement, 'family-heritage-tree');
+      } catch (error) {
+        console.error('Export failed:', error);
+        alert('Failed to export PNG. Please try again.');
+      }
+    }
+  };
 
   if (loading) {
     return (
@@ -98,11 +112,13 @@ function App() {
         onOrientationChange={setOrientation}
         nodeSize={nodeSize}
         onNodeSizeChange={setNodeSize}
+        onExportPNG={handleExportPNG}
       />
       
       <main className="h-[calc(100vh-4rem)]">
         {familyData && (
           <TreeCanvas
+            ref={treeCanvasRef}
             familyData={familyData}
             searchTerm={searchTerm}
             orientation={orientation}

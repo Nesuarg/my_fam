@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect, useState, forwardRef, useImperativeHandle } from 'react';
 import { select } from 'd3-selection';
 import { zoom, zoomTransform, ZoomBehavior } from 'd3-zoom';
 import 'd3-transition';
@@ -14,17 +14,26 @@ interface TreeCanvasProps {
   nodeSize: 'small' | 'medium' | 'large';
 }
 
-const TreeCanvas: React.FC<TreeCanvasProps> = ({
+export interface TreeCanvasRef {
+  getSVGElement: () => SVGSVGElement | null;
+}
+
+const TreeCanvas = forwardRef<TreeCanvasRef, TreeCanvasProps>(({
   familyData,
   searchTerm,
   orientation,
   nodeSize,
-}) => {
+}, ref) => {
   const svgRef = useRef<SVGSVGElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set());
   const zoomBehaviorRef = useRef<ZoomBehavior<SVGSVGElement, unknown> | null>(null);
+
+  // Expose SVG element via ref
+  useImperativeHandle(ref, () => ({
+    getSVGElement: () => svgRef.current,
+  }));
 
   // Update dimensions on resize
   useEffect(() => {
@@ -154,6 +163,8 @@ const TreeCanvas: React.FC<TreeCanvasProps> = ({
       </div>
     </div>
   );
-};
+});
+
+TreeCanvas.displayName = 'TreeCanvas';
 
 export default TreeCanvas;
