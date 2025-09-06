@@ -28,11 +28,12 @@ function csvToFamilyTree(csvText) {
   function norm(str) {
     return (str || '').toLowerCase().replace(/\s+/g, ' ').trim();
   }
-  // Build tree recursively: children only added to direct parent (normalized)
-  const nameToPerson = {};
+  // Build tree recursively: children added to all persons with matching normalized parent name
+  const nameToPersons = {};
   allPeople.forEach(p => {
     const n = norm(p.name);
-    if (!nameToPerson[n]) nameToPerson[n] = p;
+    if (!nameToPersons[n]) nameToPersons[n] = [];
+    nameToPersons[n].push(p);
   });
   allPeople.forEach(person => {
     person.children = [];
@@ -40,8 +41,10 @@ function csvToFamilyTree(csvText) {
   allPeople.forEach(person => {
     person.parents.forEach(parentName => {
       const parentNorm = norm(parentName);
-      if (nameToPerson[parentNorm]) {
-        nameToPerson[parentNorm].children.push(person);
+      if (nameToPersons[parentNorm]) {
+        nameToPersons[parentNorm].forEach(parent => {
+          parent.children.push(person);
+        });
       }
     });
   });
