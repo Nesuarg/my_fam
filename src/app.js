@@ -172,14 +172,13 @@ function renderTreeSVG(treeRoots, container) {
 
 // Handle CSV upload
 window.onload = function() {
-      // Debug: show stats and all persons
+      // Debug: show stats and all persons, and parent matching issues
       const statsDiv = document.createElement('div');
       statsDiv.style.marginTop = '2rem';
       statsDiv.style.background = '#d0f0c0';
       statsDiv.style.padding = '1rem';
       statsDiv.style.borderRadius = '8px';
       statsDiv.innerHTML = `<h3 style='color:#764ba2'>Debug: Statistik</h3>`;
-      statsDiv.innerHTML += `<p>Antal personer: ${tree.flat().length}</p>`;
       let allPersons = [];
       tree.forEach(root => {
         function collect(person) {
@@ -189,6 +188,7 @@ window.onload = function() {
         collect(root);
       });
       const roots = tree.map(r => r.name);
+      statsDiv.innerHTML += `<p>Antal personer: ${allPersons.length}</p>`;
       statsDiv.innerHTML += `<p>Rødder: ${roots.join(', ')}</p>`;
       statsDiv.innerHTML += `<h4>Alle personer og forældre</h4>`;
       statsDiv.innerHTML += `<table style='width:100%;font-size:0.9em;background:#fff;border-collapse:collapse'><tr><th>Navn</th><th>Født</th><th>Forældre (raw)</th><th>Root?</th></tr>`;
@@ -196,6 +196,25 @@ window.onload = function() {
         statsDiv.innerHTML += `<tr><td>${person.name}</td><td>${person.birthdate}</td><td>${person.parents ? person.parents.join(' | ') : ''}</td><td>${person.parents && person.parents.length === 0 ? 'Ja' : 'Nej'}</td></tr>`;
       });
       statsDiv.innerHTML += `</table>`;
+      // Find parents that do not match any person
+      const norm = str => (str || '').toLowerCase().replace(/ og | & | and |;/g, ' ').replace(/,/g, '').replace(/\s+/g, ' ').trim();
+      let unmatchedParents = [];
+      allPersons.forEach(person => {
+        person.parents.forEach(parentRaw => {
+          const parentNorm = norm(parentRaw);
+          if (parentNorm && !allPersons.some(p => norm(p.name) === parentNorm)) {
+            unmatchedParents.push({child: person.name, parent: parentRaw});
+          }
+        });
+      });
+      if (unmatchedParents.length > 0) {
+        statsDiv.innerHTML += `<h4 style='color:#a00'>Advarsel: Forældre der ikke matcher nogen person</h4>`;
+        statsDiv.innerHTML += `<table style='width:100%;font-size:0.9em;background:#fff;border-collapse:collapse'><tr><th>Barn</th><th>Forælder (raw)</th></tr>`;
+        unmatchedParents.forEach(row => {
+          statsDiv.innerHTML += `<tr><td>${row.child}</td><td>${row.parent}</td></tr>`;
+        });
+        statsDiv.innerHTML += `</table>`;
+      }
       container.appendChild(statsDiv);
   // Show JSON output for the tree
   const jsonDiv = document.createElement('div');
@@ -215,8 +234,8 @@ window.onload = function() {
       const tree = csvToFamilyTree(csvText);
       const container = document.getElementById('treeContainer');
       container.innerHTML = '';
-      if (tree.length === 0) {
-        container.innerHTML = '<p>No root found (no person without parents)</p>';
+      if (!tree || tree.length === 0) {
+        container.innerHTML = '<div style="background:#ffcccc;padding:1em;border-radius:8px;color:#a00;"><strong>Fejl:</strong> Ingen personer eller rødder fundet i CSV. Tjek at filen er korrekt og at der er data.</div>';
       } else {
         renderTreeSVG(tree, container);
         // Debug view
