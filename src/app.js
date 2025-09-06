@@ -56,7 +56,12 @@ function csvToFamilyTree(csvText) {
     return person;
   }
   // Find all roots: persons with no parents
-  const roots = allPeople.filter(p => p.parents.length === 0);
+  let roots = allPeople.filter(p => p.parents.length === 0);
+  // Debug: show root count
+  if (roots.length === 0) {
+    // Fallback: show all persons as roots
+    roots = allPeople;
+  }
   // Build tree recursively from roots
   const tree = roots.map(root => buildChildren(root));
   // Remove parent references from children
