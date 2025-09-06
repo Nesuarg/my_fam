@@ -11,25 +11,31 @@ function csvToFamilyTree(csvText) {
   const idxName = header.findIndex(h => h.toLowerCase().includes('hvem er i'));
   const idxBirth = header.findIndex(h => h.toLowerCase().includes('hvornår er du født'));
   const idxParents = header.findIndex(h => h.toLowerCase().includes('hvem er dine forældre'));
-  const people = {};
+  // Support multiple people with same name
+  const peopleByName = {};
+  const allPeople = [];
   for (let i = 1; i < lines.length; i++) {
     const row = lines[i].split(',');
     const name = row[idxName]?.trim();
     const birthdate = row[idxBirth]?.trim();
     const parents = parseParents(row[idxParents]);
-    people[name] = { name, birthdate, parents, children: [] };
+    const person = { name, birthdate, parents, children: [] };
+    if (!peopleByName[name]) peopleByName[name] = [];
+    peopleByName[name].push(person);
+    allPeople.push(person);
   }
   // Build parent-child relations
-  for (const person of Object.values(people)) {
+  for (const person of allPeople) {
     for (const parentName of person.parents) {
-      if (people[parentName]) {
-        people[parentName].children.push(person);
+      if (peopleByName[parentName] && peopleByName[parentName].length > 0) {
+        // Always add child to the first occurrence of parent
+        peopleByName[parentName][0].children.push(person);
       }
     }
   }
-  // Find the true root: person with no parents, but is parent to others
+  // Find the true root: first person with no parents and who is parent to others
   let root = null;
-  for (const person of Object.values(people)) {
+  for (const person of allPeople) {
     if (person.parents.length === 0 && person.children.length > 0) {
       root = person;
       break;
@@ -45,7 +51,7 @@ function csvToFamilyTree(csvText) {
     return [root];
   } else {
     // fallback: show all with no parents
-    const roots = Object.values(people).filter(p => p.parents.length === 0);
+    const roots = allPeople.filter(p => p.parents.length === 0);
     roots.forEach(clean);
     return roots;
   }
