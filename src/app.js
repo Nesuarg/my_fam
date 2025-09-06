@@ -26,7 +26,14 @@ function csvToFamilyTree(csvText) {
   }
   // Helper for normalized name
   function norm(str) {
-    return (str || '').toLowerCase().replace(/\s+/g, ' ').trim();
+    return (str || '')
+      .toLowerCase()
+      .replace(/\s+/g, ' ')
+      .replace(/ og | & /g, ' and ')
+      .replace(/\band\b/g, '')
+      .replace(/,/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
   }
   // Build tree recursively: children added to all persons with matching normalized parent name
   const nameToPersons = {};
@@ -185,7 +192,9 @@ window.onload = function() {
             debugDiv.innerHTML += '<li><em>No children</em></li>';
           } else {
             root.children.forEach(child => {
-              debugDiv.innerHTML += `<li>${child.name} (${child.birthdate})</li>`;
+              debugDiv.innerHTML += `<li>${child.name} (${child.birthdate})`;
+              // Show parent match info
+              debugDiv.innerHTML += `<br><small>Parent match: ${child.parents.map(p => norm(p)).join(', ')}</small></li>`;
             });
           }
           debugDiv.innerHTML += '</ul>';
