@@ -36,35 +36,36 @@ function csvToFamilyTree(csvText) {
       .replace(/\s+/g, ' ')
       .trim();
   }
-  // Build tree recursively: children added to all persons with matching normalized parent name
+  // Build lookup for all persons by normalized name
   const nameToPersons = {};
   allPeople.forEach(p => {
     const n = norm(p.name);
     if (!nameToPersons[n]) nameToPersons[n] = [];
     nameToPersons[n].push(p);
   });
-  allPeople.forEach(person => {
+  // Recursive function to build children tree
+  function buildChildren(person) {
     person.children = [];
-  });
-  allPeople.forEach(person => {
-    person.parents.forEach(parentName => {
-      const parentNorm = norm(parentName);
-      if (nameToPersons[parentNorm]) {
-        nameToPersons[parentNorm].forEach(parent => {
-          parent.children.push(person);
-        });
-      }
+    allPeople.forEach(candidate => {
+      candidate.parents.forEach(parentName => {
+        if (norm(parentName) === norm(person.name)) {
+          person.children.push(buildChildren(candidate));
+        }
+      });
     });
-  });
+    return person;
+  }
   // Find all roots: persons with no parents
   const roots = allPeople.filter(p => p.parents.length === 0);
+  // Build tree recursively from roots
+  const tree = roots.map(root => buildChildren(root));
   // Remove parent references from children
   function clean(node) {
     delete node.parents;
-    node.children.forEach(clean);
+    if (node.children) node.children.forEach(clean);
   }
-  roots.forEach(clean);
-  return roots;
+  tree.forEach(clean);
+  return tree;
 }
 
 // Render tree as SVG with lines between parent and children
