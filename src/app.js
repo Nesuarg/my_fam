@@ -24,39 +24,30 @@ function csvToFamilyTree(csvText) {
     peopleByName[name].push(person);
     allPeople.push(person);
   }
-  // Build parent-child relations
-  const usedAsChild = new Set();
-  for (const person of allPeople) {
-    for (const parentName of person.parents) {
-      if (peopleByName[parentName] && peopleByName[parentName].length > 0) {
-        // Add child only to the first occurrence of parent
-        peopleByName[parentName][0].children.push(person);
-        usedAsChild.add(person);
-        break;
+  // Build tree recursively: children only added to direct parent
+  const nameToPerson = {};
+  allPeople.forEach(p => {
+    if (!nameToPerson[p.name]) nameToPerson[p.name] = p;
+  });
+  allPeople.forEach(person => {
+    person.children = [];
+  });
+  allPeople.forEach(person => {
+    person.parents.forEach(parentName => {
+      if (nameToPerson[parentName]) {
+        nameToPerson[parentName].children.push(person);
       }
-    }
-  }
-  // Only show roots that are not used as child
-  const uniqueRoots = allPeople.filter(p => !usedAsChild.has(p));
-  // Find all root nodes: persons not listed as child anywhere
-  const childSet = new Set();
-  for (const person of allPeople) {
-    for (const parentName of person.parents) {
-      if (peopleByName[parentName]) {
-        for (const parent of peopleByName[parentName]) {
-          childSet.add(person);
-        }
-      }
-    }
-  }
-  const roots = allPeople.filter(p => !childSet.has(p));
+    });
+  });
+  // Find roots (no parents)
+  const roots = allPeople.filter(p => p.parents.length === 0);
   // Remove parent references from children
   function clean(node) {
     delete node.parents;
     node.children.forEach(clean);
   }
-  uniqueRoots.forEach(clean);
-  return uniqueRoots;
+  roots.forEach(clean);
+  return roots;
 }
 
 // Render tree as SVG with lines between parent and children
