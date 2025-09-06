@@ -35,28 +35,25 @@ function csvToFamilyTree(csvText) {
       }
     }
   }
-  // Find the true root: first person with no parents and who is parent to others
-  let root = null;
+  // Find all root nodes: persons not listed as child anywhere
+  const childSet = new Set();
   for (const person of allPeople) {
-    if (person.parents.length === 0 && person.children.length > 0) {
-      root = person;
-      break;
+    for (const parentName of person.parents) {
+      if (peopleByName[parentName]) {
+        for (const parent of peopleByName[parentName]) {
+          childSet.add(person);
+        }
+      }
     }
   }
+  const roots = allPeople.filter(p => !childSet.has(p));
   // Remove parent references from children
   function clean(node) {
     delete node.parents;
     node.children.forEach(clean);
   }
-  if (root) {
-    clean(root);
-    return [root];
-  } else {
-    // fallback: show all with no parents
-    const roots = allPeople.filter(p => p.parents.length === 0);
-    roots.forEach(clean);
-    return roots;
-  }
+  roots.forEach(clean);
+  return roots;
 }
 
 // Render tree from JSON
