@@ -63,8 +63,8 @@ const familyTree = { /* ...samme data som før... */
 function layoutTree(node, depth = 0, x = 0, positions = [], siblings = 1, index = 0) {
   // Calculate position for this node
   // Øg afstand mellem noder
-  const NODE_WIDTH = 220;
-  const NODE_HEIGHT = 110;
+  const NODE_WIDTH = 320;
+  const NODE_HEIGHT = 160;
   node._x = x;
   node._y = depth * NODE_HEIGHT + 40;
   positions.push(node);
