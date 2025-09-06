@@ -56,20 +56,89 @@ function csvToFamilyTree(csvText) {
   return roots;
 }
 
-// Render tree from JSON
-function renderTreeJSON(node, container) {
-  const el = document.createElement('div');
-  el.className = 'person';
-  el.innerHTML = `<strong>${node.name}</strong> (${node.birthdate})`;
-  container.appendChild(el);
-  if (node.children && node.children.length > 0) {
-    const childrenEl = document.createElement('div');
-    childrenEl.className = 'children';
-    for (const child of node.children) {
-      renderTreeJSON(child, childrenEl);
+// Render tree as SVG with lines between parent and children
+function renderTreeSVG(treeRoots, container) {
+  container.innerHTML = '';
+  const svgNS = 'http://www.w3.org/2000/svg';
+  const width = 1200;
+  const levelHeight = 80;
+  const nodeWidth = 180;
+  const nodeHeight = 40;
+  let maxDepth = 0;
+
+  // Calculate positions recursively
+  function layout(node, depth, x) {
+    node._x = x;
+    node._y = depth * levelHeight + 40;
+    maxDepth = Math.max(maxDepth, depth);
+    if (node.children && node.children.length > 0) {
+      let childX = x - ((node.children.length-1) * nodeWidth) / 2;
+      node.children.forEach((child, i) => {
+        layout(child, depth+1, childX + i*nodeWidth);
+      });
     }
-    container.appendChild(childrenEl);
   }
+  // Layout all roots
+  let rootX = width/2;
+  if (treeRoots.length > 1) {
+    rootX = width/(treeRoots.length+1);
+  }
+  treeRoots.forEach((root, i) => {
+    layout(root, 0, rootX + i*width/treeRoots.length);
+  });
+
+  // Create SVG
+  const svg = document.createElementNS(svgNS, 'svg');
+  svg.setAttribute('width', width);
+  svg.setAttribute('height', (maxDepth+2)*levelHeight);
+  svg.style.display = 'block';
+  svg.style.margin = '0 auto';
+
+  // Draw lines
+  function drawLines(node) {
+    if (node.children && node.children.length > 0) {
+      node.children.forEach(child => {
+        const line = document.createElementNS(svgNS, 'line');
+        line.setAttribute('x1', node._x + nodeWidth/2);
+        line.setAttribute('y1', node._y + nodeHeight);
+        line.setAttribute('x2', child._x + nodeWidth/2);
+        line.setAttribute('y2', child._y);
+        line.setAttribute('stroke', '#764ba2');
+        line.setAttribute('stroke-width', '2');
+        svg.appendChild(line);
+        drawLines(child);
+      });
+    }
+  }
+  treeRoots.forEach(drawLines);
+
+  // Draw nodes
+  function drawNodes(node) {
+    const group = document.createElementNS(svgNS, 'g');
+    group.setAttribute('transform', `translate(${node._x},${node._y})`);
+    const rect = document.createElementNS(svgNS, 'rect');
+    rect.setAttribute('width', nodeWidth);
+    rect.setAttribute('height', nodeHeight);
+    rect.setAttribute('rx', 12);
+    rect.setAttribute('fill', '#f3eaff');
+    rect.setAttribute('stroke', '#764ba2');
+    rect.setAttribute('stroke-width', '2');
+    group.appendChild(rect);
+    const text = document.createElementNS(svgNS, 'text');
+    text.setAttribute('x', nodeWidth/2);
+    text.setAttribute('y', nodeHeight/2 + 6);
+    text.setAttribute('text-anchor', 'middle');
+    text.setAttribute('font-size', '16');
+    text.setAttribute('fill', '#222');
+    text.textContent = `${node.name} (${node.birthdate})`;
+    group.appendChild(text);
+    svg.appendChild(group);
+    if (node.children && node.children.length > 0) {
+      node.children.forEach(drawNodes);
+    }
+  }
+  treeRoots.forEach(drawNodes);
+  container.appendChild(svg);
 }
 
 // Handle CSV upload
@@ -87,9 +156,7 @@ window.onload = function() {
       if (tree.length === 0) {
         container.innerHTML = '<p>No root found (no person without parents)</p>';
       } else {
-        for (const root of tree) {
-          renderTreeJSON(root, container);
-        }
+        renderTreeSVG(tree, container);
       }
     };
     reader.readAsText(file);
