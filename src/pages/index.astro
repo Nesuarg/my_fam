@@ -1,25 +1,92 @@
 ---
 import '../styles/global.css';
-// Component Imports
-import Button from '../components/Button.astro';
+import PersonCardGrid from '../components/PersonCardGrid.tsx';
+import { smithFamilyTree } from '../types/family-example';
 
-// Full Astro Component Syntax:
-// https://docs.astro.build/basics/astro-components/
+// Sample Fabricius family members for the front page
+const fabriciusFamily = [
+	{
+		id: 'fabricius-1',
+		firstName: 'Johan',
+		lastName: 'Fabricius',
+		birthDate: { year: 1745, month: 3, day: 12 },
+		birthPlace: { city: 'Copenhagen', country: 'Denmark' },
+		gender: 'male',
+		occupation: ['Merchant'],
+		isLiving: false,
+		deathDate: { year: 1820, month: 11, day: 5 }
+	},
+	{
+		id: 'fabricius-2',
+		firstName: 'Anna',
+		lastName: 'Fabricius',
+		maidenName: 'Hansen',
+		birthDate: { year: 1750, month: 7, day: 18 },
+		birthPlace: { city: 'Odense', country: 'Denmark' },
+		gender: 'female',
+		isLiving: false,
+		deathDate: { year: 1825, month: 2, day: 14 }
+	},
+	{
+		id: 'fabricius-3',
+		firstName: 'Lars',
+		lastName: 'Fabricius',
+		birthDate: { year: 1775, month: 12, day: 3 },
+		birthPlace: { city: 'Copenhagen', country: 'Denmark' },
+		gender: 'male',
+		occupation: ['Doctor'],
+		isLiving: false,
+		deathDate: { year: 1850, month: 8, day: 22 }
+	},
+	{
+		id: 'fabricius-4',
+		firstName: 'Marie',
+		lastName: 'Fabricius',
+		maidenName: 'Andersen',
+		birthDate: { year: 1805, month: 5, day: 9 },
+		birthPlace: { city: 'Aarhus', country: 'Denmark' },
+		gender: 'female',
+		isLiving: false,
+		deathDate: { year: 1880, month: 3, day: 17 }
+	}
+];
 ---
 
-<html lang="en">
+<html lang="da">
 	<head>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width" />
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<meta name="generator" content={Astro.generator} />
-		<title>Astro + TailwindCSS</title>
+		<title>Samtræ for Fabricius Familien</title>
+		<meta name="description" content="Udforsk Fabricius familiens historie og slægtsforbindelser" />
 	</head>
 
-	<body>
-		<div class="grid place-items-center h-screen content-center">
-			<Button>Tailwind Button in Astro!</Button>
-			<a href="/markdown-page" class="p-4 underline">Markdown is also supported...</a>
-		</div>
+	<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
+		<header class="bg-white shadow-sm border-b">
+			<div class="max-w-7xl mx-auto px-4 py-6">
+				<h1 class="text-4xl font-bold text-center text-gray-900">
+					🌳 Samtræ for Fabricius Familien
+				</h1>
+				<p class="text-center text-gray-600 mt-2">
+					Udforsk vores families historie og forbindelser
+				</p>
+			</div>
+		</header>
+
+		<main class="max-w-7xl mx-auto">
+			<section class="py-8">
+				<h2 class="text-2xl font-semibold text-center text-gray-800 mb-6">
+					Familiemedlemmer
+				</h2>
+				<PersonCardGrid people={fabriciusFamily} client:load />
+			</section>
+		</main>
+
+		<footer class="bg-white border-t mt-16">
+			<div class="max-w-7xl mx-auto px-4 py-6 text-center text-gray-600">
+				<p>Bevarer Fabricius familiens historie for fremtidige generationer</p>
+			</div>
+		</footer>
 	</body>
 </html>
