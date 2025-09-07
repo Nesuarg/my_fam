@@ -1,13 +1,55 @@
-# Astro with Tailwind
+# Samtræ for Fabricius Familien
+
+A digital family tree application displaying the genealogy and history of the Fabricius family.
+
+🌳 **Live Site**: [samtrae-fabricius.netlify.app](https://samtrae-fabricius.netlify.app)
+
+## About
+
+This application provides an interactive way to explore the Fabricius family lineage, featuring:
+
+- **Interactive Family Tree**: Browse through generations of the Fabricius family
+- **Detailed Person Profiles**: View biographical information, dates, and relationships
+- **Rich Genealogical Data**: Birth/death dates, locations, occupations, and life events
+- **Relationship Mapping**: Explore connections between family members
+- **Historical Documentation**: Sources and notes for genealogical research
+
+## Tech Stack
+
+Built with modern web technologies:
+- **Astro** - Static site generation with islands architecture
+- **React** - Interactive components and islands
+- **TypeScript** - Type-safe family tree data structures
+- **Tailwind CSS** - Utility-first styling
+- **shadcn/ui** - Beautiful, accessible UI components
+
+## Development
 
 ```sh
-pnpm create astro@latest -- --template with-tailwindcss
+# Install dependencies
+pnpm install
+
+# Start development server
+pnpm dev
+
+# Build for production
+pnpm build
+
+# Preview production build
+pnpm preview
 ```
 
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/withastro/astro/tree/latest/examples/with-tailwindcss)
-[![Open with CodeSandbox](https://assets.codesandbox.io/github/button-edit-lime.svg)](https://codesandbox.io/p/sandbox/github/withastro/astro/tree/latest/examples/with-tailwindcss)
-[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/withastro/astro?devcontainer_path=.devcontainer/with-tailwindcss/devcontainer.json)
+## Family Data Structure
 
-Astro comes with [Tailwind](https://tailwindcss.com) support out of the box. This example showcases how to style your Astro project with Tailwind.
+The application uses a comprehensive TypeScript type system for modeling family relationships, supporting:
+- Multiple marriages and partnerships
+- Flexible date handling (partial dates, estimated dates)
+- Rich biographical information
+- Privacy controls for living family members
+- Data validation and integrity checking
 
-For complete setup instructions, please see our [Tailwind Integration Guide](https://docs.astro.build/en/guides/integrations-guide/tailwind).
+See `/src/types/family.ts` for the complete type definitions.
+
+---
+
+*Preserving the Fabricius family history for future generations.*
