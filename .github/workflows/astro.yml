@@ -2,7 +2,7 @@ name: Deploy Astro site to Pages
 
 on:
   push:
-    branches: ["master"]
+    branches: ["master"] # change to "main" if that's your default branch
   workflow_dispatch:
 
 permissions:
@@ -20,41 +20,43 @@ env:
 jobs:
   build:
     name: Build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        node-version: [20]
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Setup Node
+      - uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
-          cache: pnpm
-          cache-dependency-path: ${{ env.BUILD_PATH }}/pnpm-lock.yaml
-      - name: Setup Pages
+          node-version: ${{ matrix.node-version }}
+          cache: "pnpm"
+
+      - name: Configure Pages
         id: pages
         uses: actions/configure-pages@v5
+
       - name: Install dependencies
         run: pnpm install
         working-directory: ${{ env.BUILD_PATH }}
+
       - name: Build with Astro
         run: |
           pnpm astro build \
             --site "${{ steps.pages.outputs.origin }}" \
             --base "${{ steps.pages.outputs.base_path }}"
         working-directory: ${{ env.BUILD_PATH }}
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: ${{ env.BUILD_PATH }}/dist
 
   deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    needs: build
-    runs-on: ubuntu-latest
-    name: Deploy
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+    n
