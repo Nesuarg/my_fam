@@ -1,51 +1,13 @@
-# My Family - Hello World App
+# Astro with Tailwind
 
-A beautiful hello world application designed to run on GitHub Pages.
-
-## 🌟 Features
-
-- **Responsive Design**: Works perfectly on both desktop and mobile devices
-- **Beautiful Styling**: Modern gradient background with glass-morphism effects
-- **Animations**: Smooth fade-in animations and heartbeat effect
-- **Family Theme**: Personalized messaging for the family
-
-## 🚀 GitHub Pages Setup
-
-To deploy this app on GitHub Pages:
-
-1. Go to your repository settings
-2. Scroll down to the "Pages" section
-3. Under "Source", select "Deploy from a branch"
-4. Choose "main" (or your default branch) as the branch
-5. Select "/ (root)" as the folder
-6. Click "Save"
-
-Your app will be available at: `https://nesuarg.github.io/my_fam/`
-
-## 🛠️ Local Development
-
-To run locally:
-
-```bash
-# Clone the repository
-git clone https://github.com/Nesuarg/my_fam.git
-cd my_fam
-
-# Start a simple HTTP server
-python3 -m http.server 8000
-
-# Open http://localhost:8000 in your browser
+```sh
+pnpm create astro@latest -- --template with-tailwindcss
 ```
 
-## 📁 Project Structure
+[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/withastro/astro/tree/latest/examples/with-tailwindcss)
+[![Open with CodeSandbox](https://assets.codesandbox.io/github/button-edit-lime.svg)](https://codesandbox.io/p/sandbox/github/withastro/astro/tree/latest/examples/with-tailwindcss)
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/withastro/astro?devcontainer_path=.devcontainer/with-tailwindcss/devcontainer.json)
 
-```
-my_fam/
-├── index.html      # Main HTML file with hello world app
-├── .gitignore      # Git ignore file
-└── README.md       # This file
-```
+Astro comes with [Tailwind](https://tailwindcss.com) support out of the box. This example showcases how to style your Astro project with Tailwind.
 
-## 💝 Made with Love
-
-This simple hello world app was created with love for the family. Perfect as a starting point for a family website!
+For complete setup instructions, please see our [Tailwind Integration Guide](https://docs.astro.build/en/guides/integrations-guide/tailwind).
