@@ -73,6 +73,145 @@ This project demonstrates the power of **AI-human collaboration** in modern soft
 
 *The future of coding is conversational.* 🚀
 
+## 🤝 Contributing to the AI-Powered Family Tree
+
+We welcome contributions to this AI-driven project! Whether you want to add features, fix bugs, or improve designs, here's how to collaborate with our AI agents safely and effectively.
+
+### 🎯 **Preferred Contribution Method: Issues → AI Agents**
+
+**The best way to contribute is by creating detailed issues that AI agents can implement:**
+
+1. **🚀 [Create a Feature Request](.github/ISSUE_TEMPLATE/ai-agent-feature-request.md)**
+   - Use natural language to describe what you want
+   - Provide context and examples
+   - Let AI agents do the coding magic ✨
+
+2. **🐛 [Report Bugs](.github/ISSUE_TEMPLATE/ai-agent-bug-fix.md)**
+   - Include steps to reproduce
+   - Add screenshots and error messages
+   - AI agents will debug and fix
+
+3. **🎨 [Request Design Changes](.github/ISSUE_TEMPLATE/ai-agent-design-enhancement.md)**
+   - Describe visual improvements
+   - Share inspiration and references
+   - AI agents will implement the design
+
+### 💡 **Why Issues Work Best:**
+
+- **AI agents excel at implementation** when given clear requirements
+- **Conversational prompts** produce better results than code reviews
+- **Maintains the "vibe coding" philosophy** of this project
+- **Protects the master branch** from experimental changes
+- **Preserves the AI-first development approach**
+
+### 🔧 **Alternative: Pull Request Workflow**
+
+**If you prefer to code yourself, please use this safe workflow to prevent "AI nuking" the master branch:**
+
+#### **Step 1: Fork & Branch**
+```bash
+# Fork the repository on GitHub
+git clone https://github.com/YOUR_USERNAME/my_fam.git
+cd my_fam
+
+# Create a feature branch (NEVER work on master!)
+git checkout -b feature/your-feature-name
+```
+
+#### **Step 2: Develop Safely**
+```bash
+# Install dependencies
+pnpm install
+
+# Start development server
+pnpm dev
+
+# Make your changes...
+# Test thoroughly!
+```
+
+#### **Step 3: Submit Pull Request**
+```bash
+# Commit your changes
+git add .
+git commit -m "Add: clear description of changes"
+git push origin feature/your-feature-name
+
+# Open a Pull Request on GitHub
+# ✅ Target: master branch
+# ✅ Include: Screenshots, testing notes, impact assessment
+```
+
+### 🛡️ **Master Branch Protection**
+
+**Why we protect master:**
+- **AI agents can be unpredictable** - experimental code needs review
+- **Maintains stability** for the live site at samtrae-fabricius.netlify.app  
+- **Preserves the project's AI-first identity** and code quality
+- **Allows safe experimentation** in feature branches
+
+**All changes to master require:**
+- ✅ Pull request review
+- ✅ Successful CI/CD checks  
+- ✅ Manual testing verification
+- ✅ AI agent approval (for AI-generated code)
+
+### 📋 **Contribution Guidelines**
+
+#### **For Issue Creators:**
+- **Be conversational** - Write prompts like you're talking to a developer
+- **Provide context** - Explain why the feature matters
+- **Include examples** - Screenshots, links, or descriptions of similar features
+- **Think user-first** - How does this help people explore family history?
+
+#### **For Code Contributors:**
+- **Follow TypeScript best practices** - This project is strongly typed
+- **Use Tailwind CSS** - No custom CSS unless absolutely necessary
+- **Leverage shadcn/ui components** - Consistent design system
+- **Test on mobile** - Many users browse family trees on phones
+- **Consider Danish context** - This is for Danish family history
+
+#### **Testing Your Changes:**
+```bash
+# Run development server
+pnpm dev
+
+# Test on different screen sizes
+# Verify accessibility
+# Check console for errors
+# Test the person cards functionality
+```
+
+### 🎨 **Design System**
+
+**Current components:**
+- Person cards (football card style)
+- Responsive grid layout
+- Danish language support
+- Blue/pink gender color coding
+- shadcn/ui component library
+
+**When adding new UI:**
+- Follow existing color schemes
+- Maintain accessibility standards  
+- Keep the "trading card" aesthetic
+- Ensure mobile responsiveness
+
+### 🚀 **Getting Started**
+
+**Never contributed before?** Start with:
+
+1. **Browse existing issues** to understand the project
+2. **Try the live site** at samtrae-fabricius.netlify.app
+3. **Read the type definitions** in `/src/types/family.ts`
+4. **Create an issue** using our templates - let AI agents help!
+
+**Ready to code?** Remember:
+- 🚫 Never push directly to master
+- ✅ Always use feature branches
+- 🔍 Test thoroughly before submitting PRs
+- 🤖 Consider letting AI agents handle complex features
+
 ---
 
 *Preserving the Fabricius family history for future generations through AI-powered development.*
