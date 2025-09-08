@@ -3,25 +3,8 @@ import '../styles/global.css';
 import PersonCardGrid from '../components/PersonCardGrid.tsx';
 import { smithFamilyTree } from '../types/family-example';
 
-// Sample Fabricius family members for the front page
-const fabriciusFamily = [
-	{
-		id: 'fabricius-1',
-		firstName: 'Niels Peter',
-		lastName: 'Fabricius',
-		gender: 'male',
-		isLiving: false,
-		spouseIds: ['fabricius-2']
-	},
-	{
-		id: 'fabricius-2',
-		firstName: 'Dorthea',
-		lastName: 'Fabricius',
-		gender: 'female',
-		isLiving: false,
-		spouseIds: ['fabricius-1']
-	}
-];
+// Use the full family tree data for testing the children functionality
+const familyMembers = Object.values(smithFamilyTree.people);
 ---
 
 <html lang="da">
@@ -30,15 +13,15 @@ const fabriciusFamily = [
 		<meta name="viewport" content="width=device-width" />
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<meta name="generator" content={Astro.generator} />
-		<title>Samtræ for Fabricius Familien</title>
-		<meta name="description" content="Udforsk Fabricius familiens historie og slægtsforbindelser" />
+		<title>Samtræ for Smith Familien</title>
+		<meta name="description" content="Udforsk Smith familiens historie og slægtsforbindelser" />
 	</head>
 
 	<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
 		<header class="bg-white shadow-sm border-b">
 			<div class="max-w-7xl mx-auto px-4 py-6">
 				<h1 class="text-4xl font-bold text-center text-gray-900">
-					🌳 Samtræ for Fabricius Familien
+					🌳 Samtræ for Smith Familien
 				</h1>
 				<p class="text-center text-gray-600 mt-2">
 					Udforsk vores families historie og forbindelser
@@ -51,13 +34,13 @@ const fabriciusFamily = [
 				<h2 class="text-2xl font-semibold text-center text-gray-800 mb-6">
 					Familiemedlemmer
 				</h2>
-				<PersonCardGrid people={fabriciusFamily} client:load />
+				<PersonCardGrid people={familyMembers} client:load />
 			</section>
 		</main>
 
 		<footer class="bg-white border-t mt-16">
 			<div class="max-w-7xl mx-auto px-4 py-6 text-center text-gray-600">
-				<p>Bevarer Fabricius familiens historie for fremtidige generationer</p>
+				<p>Bevarer Smith familiens historie for fremtidige generationer</p>
 			</div>
 		</footer>
 	</body>

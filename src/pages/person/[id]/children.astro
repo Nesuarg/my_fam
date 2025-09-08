@@ -1,0 +1,57 @@
+---
+export const prerender = false;
+
+import '../../../styles/global.css';
+import ChildrenPage from '../../../components/ChildrenPage.tsx';
+import { smithFamilyTree } from '../../../types/family-example';
+
+// Get the person ID from the URL parameters
+const { id } = Astro.params;
+
+// Find the person in our family tree
+const person = smithFamilyTree.people[id as string];
+
+// If person not found, we'll handle this in the component
+---
+
+<html lang="da">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<meta name="generator" content={Astro.generator} />
+		<title>
+			{person ? `${person.firstName} ${person.lastName} - Børn` : 'Person ikke fundet'} | Samtræ for Fabricius Familien
+		</title>
+		<meta name="description" content={person ? `Udforsk ${person.firstName} ${person.lastName}s børn og efterkommere` : 'Person ikke fundet i familietræet'} />
+	</head>
+
+	<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
+		<header class="bg-white shadow-sm border-b">
+			<div class="max-w-7xl mx-auto px-4 py-6">
+				<nav class="mb-4">
+					<a href="/" class="text-blue-600 hover:text-blue-800 font-medium">
+						← Tilbage til familietræet
+					</a>
+				</nav>
+				<h1 class="text-4xl font-bold text-center text-gray-900">
+					🌳 Samtræ for Fabricius Familien
+				</h1>
+			</div>
+		</header>
+
+		<main class="max-w-7xl mx-auto">
+			<ChildrenPage 
+				personId={id as string} 
+				familyTree={smithFamilyTree} 
+				client:load 
+			/>
+		</main>
+
+		<footer class="bg-white border-t mt-16">
+			<div class="max-w-7xl mx-auto px-4 py-6 text-center text-gray-600">
+				<p>Bevarer Fabricius familiens historie for fremtidige generationer</p>
+			</div>
+		</footer>
+	</body>
+</html>

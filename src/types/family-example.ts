@@ -53,6 +53,40 @@ const sarahSmith: Person = createPerson("sarah-smith-1", "Sarah", "Smith", {
 	isLiving: true,
 });
 
+// Add David's wife and children to demonstrate the infinite paradigm
+const emilySmith: Person = createPerson("emily-smith-1", "Emily", "Smith", {
+	firstName: "Emily",
+	lastName: "Smith",
+	maidenName: "Brown",
+	birthDate: { year: 1980, month: 4, day: 15 },
+	birthPlace: { city: "Seattle", state: "Washington", country: "USA" },
+	gender: "female",
+	occupation: ["Teacher"],
+	spouseIds: ["david-smith-1"],
+	childrenIds: ["michael-smith-1", "sophia-smith-1"],
+	isLiving: true,
+});
+
+const michaelSmith: Person = createPerson("michael-smith-1", "Michael", "Smith", {
+	birthDate: { year: 2005, month: 8, day: 12 },
+	birthPlace: { city: "Boston", state: "Massachusetts", country: "USA" },
+	gender: "male",
+	fatherId: "david-smith-1",
+	motherId: "emily-smith-1",
+	siblingIds: ["sophia-smith-1"],
+	isLiving: true,
+});
+
+const sophiaSmith: Person = createPerson("sophia-smith-1", "Sophia", "Smith", {
+	birthDate: { year: 2008, month: 3, day: 20 },
+	birthPlace: { city: "Boston", state: "Massachusetts", country: "USA" },
+	gender: "female",
+	fatherId: "david-smith-1",
+	motherId: "emily-smith-1",
+	siblingIds: ["michael-smith-1"],
+	isLiving: true,
+});
+
 // Update relationships
 johnSmith.spouseIds = ["mary-johnson-1"];
 johnSmith.childrenIds = ["david-smith-1", "sarah-smith-1"];
@@ -61,6 +95,8 @@ maryJohnson.spouseIds = ["john-smith-1"];
 maryJohnson.childrenIds = ["david-smith-1", "sarah-smith-1"];
 
 davidSmith.siblingIds = ["sarah-smith-1"];
+davidSmith.spouseIds = ["emily-smith-1"];
+davidSmith.childrenIds = ["michael-smith-1", "sophia-smith-1"];
 
 // Create a marriage record
 const johnMaryMarriage: Marriage = {
@@ -82,6 +118,9 @@ const smithFamilyTree: FamilyTree = {
 		"mary-johnson-1": maryJohnson,
 		"david-smith-1": davidSmith,
 		"sarah-smith-1": sarahSmith,
+		"emily-smith-1": emilySmith,
+		"michael-smith-1": michaelSmith,
+		"sophia-smith-1": sophiaSmith,
 	},
 	marriages: {
 		"marriage-john-mary-1": johnMaryMarriage,

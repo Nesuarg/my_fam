@@ -7,9 +7,11 @@ import { calculateAge, formatDate } from "@/types/family-utils";
 interface PersonCardProps {
 	person: Person;
 	className?: string;
+	onPersonClick?: (person: Person) => void;
+	enableNavigation?: boolean;
 }
 
-export function PersonCard({ person, className = "" }: PersonCardProps) {
+export function PersonCard({ person, className = "", onPersonClick, enableNavigation = true }: PersonCardProps) {
 	const age = person.birthDate
 		? calculateAge(person.birthDate, person.deathDate)
 		: null;
@@ -46,10 +48,17 @@ export function PersonCard({ person, className = "" }: PersonCardProps) {
 		);
 	};
 
-	return (
-		<Card
-			className={`w-64 min-h-80 ${getGenderColor(person.gender)} border-2 shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden ${className}`}
-		>
+	const handleClick = () => {
+		if (onPersonClick) {
+			onPersonClick(person);
+		} else if (enableNavigation) {
+			// Default navigation to children page
+			window.location.href = `/person/${person.id}/children`;
+		}
+	};
+
+	const cardContent = (
+		<>
 			<CardHeader className="pb-1 px-4 pt-4">
 				{/* Person Photo Placeholder */}
 				<div className="w-20 h-20 mx-auto mb-2 rounded-full bg-gradient-to-br from-slate-200 to-slate-300 flex items-center justify-center border-4 border-white shadow-md">
@@ -110,6 +119,27 @@ export function PersonCard({ person, className = "" }: PersonCardProps) {
 					<div className="flex justify-center pt-2">{getStatusBadge()}</div>
 				</div>
 			</CardContent>
+		</>
+	);
+
+	if (enableNavigation && !onPersonClick) {
+		return (
+			<a href={`/person/${person.id}/children`} className="block">
+				<Card
+					className={`w-64 min-h-80 ${getGenderColor(person.gender)} border-2 shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden cursor-pointer ${className}`}
+				>
+					{cardContent}
+				</Card>
+			</a>
+		);
+	}
+
+	return (
+		<Card
+			className={`w-64 min-h-80 ${getGenderColor(person.gender)} border-2 shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden ${enableNavigation ? 'cursor-pointer' : ''} ${className}`}
+			onClick={handleClick}
+		>
+			{cardContent}
 		</Card>
 	);
 }
