@@ -1,17 +1,24 @@
 import React from "react";
 import PersonCard from "./PersonCard";
 import PersonCardGrid from "./PersonCardGrid";
-import type { FamilyTree, Person } from "@/types/family";
-import { getChildren, getFullName, getDisplayName } from "@/types/family-utils";
+import type { HierarchicalFamilyTree } from "@/types/hierarchical-family";
+import { 
+	getChildren, 
+	getFullName, 
+	getDisplayName, 
+	findPersonById,
+	findPersonsCouple,
+	getCoupleDisplayName 
+} from "@/types/hierarchical-family-utils";
 
 interface ChildrenPageProps {
 	personId: string;
-	familyTree: FamilyTree;
+	familyTree: HierarchicalFamilyTree;
 }
 
 export function ChildrenPage({ personId, familyTree }: ChildrenPageProps) {
 	// Get the person from the family tree
-	const person = familyTree.people[personId];
+	const person = findPersonById(familyTree, personId);
 	
 	if (!person) {
 		return (
@@ -29,20 +36,24 @@ export function ChildrenPage({ personId, familyTree }: ChildrenPageProps) {
 		);
 	}
 
-	// Get children using the utility function
-	const children = getChildren(personId, familyTree);
-
-	// Get spouse information for context
-	const spouses = person.spouseIds?.map(spouseId => familyTree.people[spouseId]).filter(Boolean) || [];
+	// Get children using the hierarchical utility function
+	const children = getChildren(familyTree, personId);
+	
+	// Find the couple this person belongs to (if any)
+	const couple = findPersonsCouple(familyTree, personId);
 	
 	const getParentNames = () => {
-		const names = [getDisplayName(person)];
-		if (spouses.length > 0) {
-			spouses.forEach(spouse => {
-				names.push(getDisplayName(spouse));
-			});
+		if (couple) {
+			return getCoupleDisplayName(couple);
 		}
-		return names.join(" & ");
+		return getDisplayName(person);
+	};
+
+	const getParentCards = () => {
+		if (couple) {
+			return [couple.person1, couple.person2];
+		}
+		return [person];
 	};
 
 	return (
@@ -60,9 +71,8 @@ export function ChildrenPage({ personId, familyTree }: ChildrenPageProps) {
 				
 				{/* Parent Cards */}
 				<div className="flex flex-wrap justify-center gap-4 mb-8">
-					<PersonCard person={person} enableNavigation={false} />
-					{spouses.map(spouse => (
-						<PersonCard key={spouse.id} person={spouse} enableNavigation={false} />
+					{getParentCards().map(parentPerson => (
+						<PersonCard key={parentPerson.id} person={parentPerson} enableNavigation={false} />
 					))}
 				</div>
 			</div>
@@ -82,8 +92,7 @@ export function ChildrenPage({ personId, familyTree }: ChildrenPageProps) {
 						Ingen børn registreret
 					</h3>
 					<p className="text-gray-500">
-						Der er endnu ikke registreret nogen børn for {getFullName(person)}
-						{spouses.length > 0 && ` & ${spouses.map(s => getFullName(s)).join(", ")}`}.
+						Der er endnu ikke registreret nogen børn for {getParentNames()}.
 					</p>
 				</div>
 			)}

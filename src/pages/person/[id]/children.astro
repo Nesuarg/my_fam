@@ -3,13 +3,14 @@ export const prerender = false;
 
 import '../../../styles/global.css';
 import ChildrenPage from '../../../components/ChildrenPage.tsx';
-import { smithFamilyTree } from '../../../types/family-example';
+import { smithFamilyTreeHierarchical } from '../../../types/hierarchical-family-example';
+import { findPersonById } from '../../../types/hierarchical-family-utils';
 
 // Get the person ID from the URL parameters
 const { id } = Astro.params;
 
-// Find the person in our family tree
-const person = smithFamilyTree.people[id as string];
+// Find the person in our hierarchical family tree
+const person = findPersonById(smithFamilyTreeHierarchical, id as string);
 
 // If person not found, we'll handle this in the component
 ---
@@ -43,7 +44,7 @@ const person = smithFamilyTree.people[id as string];
 		<main class="max-w-7xl mx-auto">
 			<ChildrenPage 
 				personId={id as string} 
-				familyTree={smithFamilyTree} 
+				familyTree={smithFamilyTreeHierarchical} 
 				client:load 
 			/>
 		</main>

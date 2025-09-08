@@ -1,10 +1,13 @@
 ---
 import '../styles/global.css';
+import CoupleCard from '../components/CoupleCard.tsx';
 import PersonCardGrid from '../components/PersonCardGrid.tsx';
-import { smithFamilyTree } from '../types/family-example';
+import { smithFamilyTreeHierarchical } from '../types/hierarchical-family-example';
+import { getAllPeople } from '../types/hierarchical-family-utils';
 
-// Use the full family tree data for testing the children functionality
-const familyMembers = Object.values(smithFamilyTree.people);
+// Get the founding couple and all people for display
+const foundingCouple = smithFamilyTreeHierarchical.foundingCouple;
+const allFamilyMembers = getAllPeople(smithFamilyTreeHierarchical);
 ---
 
 <html lang="da">
@@ -34,7 +37,22 @@ const familyMembers = Object.values(smithFamilyTree.people);
 				<h2 class="text-2xl font-semibold text-center text-gray-800 mb-6">
 					Familiemedlemmer
 				</h2>
-				<PersonCardGrid people={familyMembers} client:load />
+				
+				{/* Display the founding couple prominently */}
+				<div class="mb-12">
+					<h3 class="text-xl font-semibold text-center text-gray-700 mb-4">
+						Stiftende Par
+					</h3>
+					<CoupleCard couple={foundingCouple} client:load />
+				</div>
+
+				{/* Display all family members in a grid for easy navigation */}
+				<div class="mb-8">
+					<h3 class="text-xl font-semibold text-center text-gray-700 mb-4">
+						Alle Familiemedlemmer
+					</h3>
+					<PersonCardGrid people={allFamilyMembers} client:load />
+				</div>
 			</section>
 		</main>
 

@@ -1,13 +1,13 @@
 import React from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import type { Person, FamilyDate } from "@/types/family";
-import { calculateAge, formatDate } from "@/types/family-utils";
+import type { Person as HierarchicalPerson } from "@/types/hierarchical-family";
+import { calculateAge, formatDate } from "@/types/hierarchical-family-utils";
 
 interface PersonCardProps {
-	person: Person;
+	person: HierarchicalPerson;
 	className?: string;
-	onPersonClick?: (person: Person) => void;
+	onPersonClick?: (person: HierarchicalPerson) => void;
 	enableNavigation?: boolean;
 }
 
