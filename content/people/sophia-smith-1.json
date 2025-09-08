@@ -1,0 +1,19 @@
+{
+  "id": "sophia-smith-1",
+  "firstName": "Sophia",
+  "lastName": "Smith",
+  "birthDate": {
+    "year": 2008,
+    "month": 3,
+    "day": 20
+  },
+  "birthPlace": {
+    "city": "Boston",
+    "state": "Massachusetts",
+    "country": "USA"
+  },
+  "gender": "female",
+  "isLiving": true,
+  "createdAt": "2024-01-01T00:00:00.000Z",
+  "updatedAt": "2024-01-01T00:00:00.000Z"
+}

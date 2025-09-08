@@ -2,12 +2,22 @@
 import '../styles/global.css';
 import CoupleCard from '../components/CoupleCard.tsx';
 import PersonCardGrid from '../components/PersonCardGrid.tsx';
-import { smithFamilyTreeHierarchical } from '../types/hierarchical-family-example';
+import { buildHierarchicalFamilyTree, loadAllPeople } from '../lib/cms';
 import { getAllPeople } from '../types/hierarchical-family-utils';
 
-// Get the founding couple and all people for display
-const foundingCouple = smithFamilyTreeHierarchical.foundingCouple;
-const allFamilyMembers = getAllPeople(smithFamilyTreeHierarchical);
+// Try to load from CMS first, fallback to example if no data
+let foundingCouple;
+let allFamilyMembers;
+
+const familyTreeFromCms = buildHierarchicalFamilyTree();
+if (familyTreeFromCms) {
+  foundingCouple = familyTreeFromCms.foundingCouple;
+  allFamilyMembers = getAllPeople(familyTreeFromCms);
+} else {
+  // Fallback: load all people from CMS without hierarchical structure
+  allFamilyMembers = loadAllPeople();
+  foundingCouple = null;
+}
 ---
 
 <html lang="da">
@@ -29,6 +39,11 @@ const allFamilyMembers = getAllPeople(smithFamilyTreeHierarchical);
 				<p class="text-center text-gray-600 mt-2">
 					Udforsk vores families historie og forbindelser
 				</p>
+				<div class="text-center mt-4">
+					<a href="/admin" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
+						👨‍💼 Administrer familie
+					</a>
+				</div>
 			</div>
 		</header>
 
@@ -39,20 +54,31 @@ const allFamilyMembers = getAllPeople(smithFamilyTreeHierarchical);
 				</h2>
 				
 				{/* Display the founding couple prominently */}
-				<div class="mb-12">
-					<h3 class="text-xl font-semibold text-center text-gray-700 mb-4">
-						Stiftende Par
-					</h3>
-					<CoupleCard couple={foundingCouple} client:load />
-				</div>
+				{foundingCouple && (
+					<div class="mb-12">
+						<h3 class="text-xl font-semibold text-center text-gray-700 mb-4">
+							Stiftende Par
+						</h3>
+						<CoupleCard couple={foundingCouple} client:load />
+					</div>
+				)}
 
 				{/* Display all family members in a grid for easy navigation */}
-				<div class="mb-8">
-					<h3 class="text-xl font-semibold text-center text-gray-700 mb-4">
-						Alle Familiemedlemmer
-					</h3>
-					<PersonCardGrid people={allFamilyMembers} client:load />
-				</div>
+				{allFamilyMembers && allFamilyMembers.length > 0 ? (
+					<div class="mb-8">
+						<h3 class="text-xl font-semibold text-center text-gray-700 mb-4">
+							Alle Familiemedlemmer ({allFamilyMembers.length})
+						</h3>
+						<PersonCardGrid people={allFamilyMembers} client:load />
+					</div>
+				) : (
+					<div class="text-center py-12">
+						<p class="text-gray-500 text-lg mb-4">Ingen familiemedlemmer fundet.</p>
+						<a href="/admin" class="bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700">
+							Tilføj det første familiemedlem
+						</a>
+					</div>
+				)}
 			</section>
 		</main>
 

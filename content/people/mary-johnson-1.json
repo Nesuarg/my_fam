@@ -1,0 +1,21 @@
+{
+  "id": "mary-johnson-1",
+  "firstName": "Mary",
+  "lastName": "Smith",
+  "maidenName": "Johnson",
+  "birthDate": {
+    "year": 1952,
+    "month": 8,
+    "day": 22
+  },
+  "birthPlace": {
+    "city": "New York",
+    "state": "New York",
+    "country": "USA"
+  },
+  "gender": "female",
+  "occupation": ["Nurse"],
+  "isLiving": true,
+  "createdAt": "2024-01-01T00:00:00.000Z",
+  "updatedAt": "2024-01-01T00:00:00.000Z"
+}

@@ -1,0 +1,20 @@
+{
+  "id": "david-smith-1",
+  "firstName": "David",
+  "lastName": "Smith",
+  "birthDate": {
+    "year": 1975,
+    "month": 12,
+    "day": 5
+  },
+  "birthPlace": {
+    "city": "Boston",
+    "state": "Massachusetts",
+    "country": "USA"
+  },
+  "gender": "male",
+  "occupation": ["Software Engineer"],
+  "isLiving": true,
+  "createdAt": "2024-01-01T00:00:00.000Z",
+  "updatedAt": "2024-01-01T00:00:00.000Z"
+}

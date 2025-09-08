@@ -1,0 +1,20 @@
+{
+  "id": "david-emily-couple",
+  "person1Id": "david-smith-1",
+  "person2Id": "emily-smith-1",
+  "relationshipType": "married",
+  "startDate": {
+    "year": 2003,
+    "month": 9,
+    "day": 15
+  },
+  "startPlace": {
+    "city": "Boston",
+    "state": "Massachusetts",
+    "country": "USA"
+  },
+  "childrenIds": ["michael-smith-1", "sophia-smith-1"],
+  "isFoundingCouple": false,
+  "createdAt": "2024-01-01T00:00:00.000Z",
+  "updatedAt": "2024-01-01T00:00:00.000Z"
+}
