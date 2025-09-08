@@ -158,6 +158,25 @@ export function FamilyTreeView({ familyTree, className = "" }: FamilyTreeViewPro
       });
     });
 
+    // Also connect single parents to their children
+    nodes.forEach(node => {
+      if (node.children.length > 0) {
+        // Only add connections if this person is not part of a union
+        const isInUnion = unions.some(u => 
+          u.spouse1.id === node.id || u.spouse2.id === node.id
+        );
+        if (!isInUnion) {
+          node.children.forEach(childId => {
+            connections.push({
+              from: node.id,
+              to: childId,
+              type: 'parent-child'
+            });
+          });
+        }
+      }
+    });
+
     return { treeNodes: nodes, unionNodes: unions, connections };
   }, [familyTree, collapsedUnions]);
 
