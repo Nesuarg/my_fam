@@ -1,0 +1,19 @@
+{
+  "id": "michael-smith-1",
+  "firstName": "Michael",
+  "lastName": "Smith",
+  "birthDate": {
+    "year": 2005,
+    "month": 8,
+    "day": 12
+  },
+  "birthPlace": {
+    "city": "Boston",
+    "state": "Massachusetts",
+    "country": "USA"
+  },
+  "gender": "male",
+  "isLiving": true,
+  "createdAt": "2024-01-01T00:00:00.000Z",
+  "updatedAt": "2024-01-01T00:00:00.000Z"
+}

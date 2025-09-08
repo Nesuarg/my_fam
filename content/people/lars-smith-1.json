@@ -1,0 +1,21 @@
+{
+  "id": "lars-smith-1",
+  "firstName": "Lars",
+  "lastName": "Smith",
+  "gender": "male",
+  "isLiving": true,
+  "createdAt": "2025-09-08T20:17:38.836Z",
+  "updatedAt": "2025-09-08T20:17:38.836Z",
+  "birthDate": {
+    "year": 1985,
+    "month": 6,
+    "day": 15
+  },
+  "birthPlace": {
+    "city": "Copenhagen",
+    "country": "Denmark"
+  },
+  "occupation": [
+    "Engineer"
+  ]
+}

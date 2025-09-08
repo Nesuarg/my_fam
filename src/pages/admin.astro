@@ -1,0 +1,48 @@
+---
+import '../styles/global.css';
+import AddPersonForm from '../components/AddPersonForm.tsx';
+---
+
+<html lang="da">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<meta name="generator" content={Astro.generator} />
+		<title>Familie CMS Admin</title>
+		<meta name="description" content="Administrer Smith familiens medlemmer" />
+	</head>
+
+	<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
+		<header class="bg-white shadow-sm border-b">
+			<div class="max-w-7xl mx-auto px-4 py-6">
+				<h1 class="text-4xl font-bold text-center text-gray-900">
+					👨‍💼 Familie CMS Admin
+				</h1>
+				<p class="text-center text-gray-600 mt-2">
+					Tilføj og rediger familiemedlemmer
+				</p>
+				<div class="text-center mt-4">
+					<a href="/" class="text-blue-600 hover:text-blue-800 underline">
+						← Tilbage til familieoversigt
+					</a>
+				</div>
+			</div>
+		</header>
+
+		<main class="max-w-4xl mx-auto py-8 px-4">
+			<section class="bg-white rounded-lg shadow-lg p-6">
+				<h2 class="text-2xl font-semibold text-gray-800 mb-6">
+					Tilføj nyt familiemedlem
+				</h2>
+				<AddPersonForm client:load />
+			</section>
+		</main>
+
+		<footer class="bg-white border-t mt-16">
+			<div class="max-w-7xl mx-auto px-4 py-6 text-center text-gray-600">
+				<p>CMS til Smith familiens historie</p>
+			</div>
+		</footer>
+	</body>
+</html>

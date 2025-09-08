@@ -1,0 +1,21 @@
+{
+  "id": "emily-smith-1",
+  "firstName": "Emily",
+  "lastName": "Smith",
+  "maidenName": "Brown",
+  "birthDate": {
+    "year": 1980,
+    "month": 4,
+    "day": 15
+  },
+  "birthPlace": {
+    "city": "Seattle",
+    "state": "Washington",
+    "country": "USA"
+  },
+  "gender": "female",
+  "occupation": ["Teacher"],
+  "isLiving": true,
+  "createdAt": "2024-01-01T00:00:00.000Z",
+  "updatedAt": "2024-01-01T00:00:00.000Z"
+}
