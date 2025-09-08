@@ -1,13 +1,14 @@
 ---
 import '../styles/global.css';
-import CoupleCard from '../components/CoupleCard.tsx';
-import PersonCardGrid from '../components/PersonCardGrid.tsx';
-import { smithFamilyTreeHierarchical } from '../types/hierarchical-family-example';
-import { getAllPeople } from '../types/hierarchical-family-utils';
+import CompactCoupleCard from '../components/CompactCoupleCard.tsx';
+import CompactPersonCardGrid from '../components/CompactPersonCardGrid.tsx';
+import HierarchicalFamilyView from '../components/HierarchicalFamilyView.tsx';
+import { loadFamilyData } from '../types/simple-family-utils';
 
-// Get the founding couple and all people for display
-const foundingCouple = smithFamilyTreeHierarchical.foundingCouple;
-const allFamilyMembers = getAllPeople(smithFamilyTreeHierarchical);
+// Load family data from JSON files
+const familyData = await loadFamilyData();
+const foundingCouple = familyData.foundingCouple;
+const allFamilyMembers = familyData.allPeople;
 ---
 
 <html lang="da">
@@ -35,15 +36,20 @@ const allFamilyMembers = getAllPeople(smithFamilyTreeHierarchical);
 		<main class="max-w-7xl mx-auto">
 			<section class="py-8">
 				<h2 class="text-2xl font-semibold text-center text-gray-800 mb-6">
-					Familiemedlemmer
+					Familietræ
 				</h2>
 				
+				{/* Complete hierarchical family tree view */}
+				<div class="mb-16">
+					<HierarchicalFamilyView familyTree={familyData} client:load />
+				</div>
+
 				{/* Display the founding couple prominently */}
 				<div class="mb-12">
 					<h3 class="text-xl font-semibold text-center text-gray-700 mb-4">
 						Stiftende Par
 					</h3>
-					<CoupleCard couple={foundingCouple} client:load />
+					<CompactCoupleCard couple={foundingCouple} level={0} client:load />
 				</div>
 
 				{/* Display all family members in a grid for easy navigation */}
@@ -51,7 +57,7 @@ const allFamilyMembers = getAllPeople(smithFamilyTreeHierarchical);
 					<h3 class="text-xl font-semibold text-center text-gray-700 mb-4">
 						Alle Familiemedlemmer
 					</h3>
-					<PersonCardGrid people={allFamilyMembers} client:load />
+					<CompactPersonCardGrid people={allFamilyMembers} client:load />
 				</div>
 			</section>
 		</main>

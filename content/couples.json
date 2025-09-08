@@ -1,0 +1,35 @@
+[
+  {
+    "id": "john-mary-couple",
+    "person1Id": "john-smith-1",
+    "person2Id": "mary-johnson-1",
+    "relationshipType": "married",
+    "children": [
+      {
+        "personId": "david-smith-1",
+        "birthOrder": 1,
+        "ownFamilyId": "david-emily-couple"
+      },
+      {
+        "personId": "sarah-smith-1",
+        "birthOrder": 2
+      }
+    ]
+  },
+  {
+    "id": "david-emily-couple",
+    "person1Id": "david-smith-1",
+    "person2Id": "emily-smith-1",
+    "relationshipType": "married",
+    "children": [
+      {
+        "personId": "michael-smith-1",
+        "birthOrder": 1
+      },
+      {
+        "personId": "sophia-smith-1",
+        "birthOrder": 2
+      }
+    ]
+  }
+]
