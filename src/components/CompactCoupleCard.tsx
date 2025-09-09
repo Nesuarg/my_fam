@@ -20,25 +20,31 @@ export function CompactCoupleCard({
   
   return (
     <div className={`mb-6 ${className}`}>
-      <div className={`p-4 rounded-lg ${levelBgClass} border border-gray-200`}>
-        <div className="flex flex-col lg:flex-row items-center justify-center gap-4 max-w-4xl mx-auto">
+      <div className={`p-3 rounded-lg ${levelBgClass} border border-gray-200`}>
+        <div className="flex items-center justify-center gap-3 max-w-5xl mx-auto">
           <CompactPersonCard 
             person={couple.person1} 
             enableNavigation={enableNavigation} 
           />
           
-          {/* Enhanced couple connection indicator */}
-          <div className="flex flex-col items-center lg:mx-4">
+          {/* Enhanced couple connection indicator - always horizontal */}
+          <div className="flex flex-col items-center mx-2 flex-shrink-0">
             <div className="flex items-center">
-              <div className="w-8 h-0.5 bg-red-400"></div>
-              <div className="w-6 h-6 bg-red-500 rounded-full flex items-center justify-center mx-1 shadow-sm">
-                <span className="text-white text-xs font-bold">💕</span>
+              <div className="w-6 h-0.5 bg-red-400"></div>
+              <div className="w-5 h-5 bg-red-500 rounded-full flex items-center justify-center mx-1 shadow-sm">
+                <span className="text-white text-xs">💕</span>
               </div>
-              <div className="w-8 h-0.5 bg-red-400"></div>
+              <div className="w-6 h-0.5 bg-red-400"></div>
             </div>
-            <div className="text-xs text-red-600 font-medium mt-1 capitalize">
+            <div className="text-xs text-red-600 font-medium mt-1 capitalize whitespace-nowrap">
               {couple.relationshipType}
             </div>
+            {/* Children indicator moved here for compactness */}
+            {couple.children && couple.children.length > 0 && (
+              <div className="text-xs text-gray-600 font-medium mt-1">
+                {couple.children.length} {couple.children.length === 1 ? 'child' : 'children'}
+              </div>
+            )}
           </div>
           
           <CompactPersonCard 
@@ -46,15 +52,6 @@ export function CompactCoupleCard({
             enableNavigation={enableNavigation} 
           />
         </div>
-        
-        {/* Children indicator */}
-        {couple.children && couple.children.length > 0 && (
-          <div className="text-center mt-3">
-            <div className="text-xs text-gray-600 font-medium">
-              {couple.children.length} {couple.children.length === 1 ? 'Child' : 'Children'}
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );

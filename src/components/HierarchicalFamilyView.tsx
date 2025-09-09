@@ -1,6 +1,7 @@
 import React from "react";
 import CompactCoupleCard from "./CompactCoupleCard";
 import CompactPersonCard from "./CompactPersonCard";
+import MiniPersonCard from "./MiniPersonCard";
 import type { PopulatedCouple, PopulatedFamilyTree } from "@/types/simple-family";
 import { calculateCoupleLevel, getLevelBackgroundClass } from "@/types/simple-family-utils";
 
@@ -35,20 +36,20 @@ export function HierarchicalFamilyView({
           <div className="mt-6">
             {/* Children section header */}
             <div className="text-center mb-4">
-              <div className="w-px h-8 bg-gray-400 mx-auto"></div>
+              <div className="w-px h-6 bg-gray-400 mx-auto"></div>
               <div className="text-sm text-gray-600 font-medium bg-white px-3 py-1 rounded-full border border-gray-300 inline-block">
                 Children of {couple.person1.firstName} & {couple.person2.firstName}
               </div>
             </div>
             
-            <div className="space-y-6">
-              {/* Children without own families */}
+            <div className="space-y-4">
+              {/* Children without own families - using MiniPersonCard for better space utilization */}
               {couple.children.filter(child => !child.ownFamily).length > 0 && (
-                <div className="flex flex-wrap gap-4 justify-center">
+                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3 justify-items-center max-w-4xl mx-auto">
                   {couple.children
                     .filter(child => !child.ownFamily)
                     .map(child => (
-                      <CompactPersonCard
+                      <MiniPersonCard
                         key={child.person.id}
                         person={child.person}
                         enableNavigation={enableNavigation}
