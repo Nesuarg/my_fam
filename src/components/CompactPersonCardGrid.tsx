@@ -16,7 +16,7 @@ export function CompactPersonCardGrid({
   onPersonClick 
 }: CompactPersonCardGridProps) {
   return (
-    <div className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 justify-items-center ${className}`}>
+    <div className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4 justify-items-center px-2 ${className}`}>
       {people.map((person) => (
         <CompactPersonCard
           key={person.id}

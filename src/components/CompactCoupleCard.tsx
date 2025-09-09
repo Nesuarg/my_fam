@@ -20,21 +20,23 @@ export function CompactCoupleCard({
   
   return (
     <div className={`mb-6 ${className}`}>
-      <div className={`p-3 rounded-lg ${levelBgClass} border border-gray-200`}>
-        <div className="flex items-center justify-center gap-3 max-w-5xl mx-auto">
-          <CompactPersonCard 
-            person={couple.person1} 
-            enableNavigation={enableNavigation} 
-          />
+      <div className={`p-2 sm:p-3 rounded-lg ${levelBgClass} border border-gray-200`}>
+        <div className="flex items-center justify-center gap-2 sm:gap-3 max-w-5xl mx-auto">
+          <div className="flex-1 min-w-0">
+            <CompactPersonCard 
+              person={couple.person1} 
+              enableNavigation={enableNavigation} 
+            />
+          </div>
           
           {/* Enhanced couple connection indicator - always horizontal */}
-          <div className="flex flex-col items-center mx-2 flex-shrink-0">
+          <div className="flex flex-col items-center mx-1 sm:mx-2 flex-shrink-0">
             <div className="flex items-center">
-              <div className="w-6 h-0.5 bg-red-400"></div>
-              <div className="w-5 h-5 bg-red-500 rounded-full flex items-center justify-center mx-1 shadow-sm">
+              <div className="w-4 sm:w-6 h-0.5 bg-red-400"></div>
+              <div className="w-4 sm:w-5 h-4 sm:h-5 bg-red-500 rounded-full flex items-center justify-center mx-0.5 sm:mx-1 shadow-sm">
                 <span className="text-white text-xs">💕</span>
               </div>
-              <div className="w-6 h-0.5 bg-red-400"></div>
+              <div className="w-4 sm:w-6 h-0.5 bg-red-400"></div>
             </div>
             <div className="text-xs text-red-600 font-medium mt-1 capitalize whitespace-nowrap">
               {couple.relationshipType}
@@ -47,10 +49,12 @@ export function CompactCoupleCard({
             )}
           </div>
           
-          <CompactPersonCard 
-            person={couple.person2} 
-            enableNavigation={enableNavigation} 
-          />
+          <div className="flex-1 min-w-0">
+            <CompactPersonCard 
+              person={couple.person2} 
+              enableNavigation={enableNavigation} 
+            />
+          </div>
         </div>
       </div>
     </div>

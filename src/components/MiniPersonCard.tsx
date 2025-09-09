@@ -92,7 +92,7 @@ export function MiniPersonCard({
     return (
       <a href={`/person/${person.id}/children`} className="block">
         <Card
-          className={`w-24 h-32 ${getGenderColor(person.gender)} border shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden cursor-pointer ${className}`}
+          className={`w-full max-w-24 h-32 ${getGenderColor(person.gender)} border shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden cursor-pointer ${className}`}
         >
           {cardContent}
         </Card>
@@ -102,7 +102,7 @@ export function MiniPersonCard({
 
   return (
     <Card
-      className={`w-24 h-32 ${getGenderColor(person.gender)} border shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden ${enableNavigation ? 'cursor-pointer' : ''} ${className}`}
+      className={`w-full max-w-24 h-32 ${getGenderColor(person.gender)} border shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden ${enableNavigation ? 'cursor-pointer' : ''} ${className}`}
       onClick={handleClick}
     >
       {cardContent}

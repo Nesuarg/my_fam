@@ -45,7 +45,7 @@ export function HierarchicalFamilyView({
             <div className="space-y-4">
               {/* Children without own families - using MiniPersonCard for better space utilization */}
               {couple.children.filter(child => !child.ownFamily).length > 0 && (
-                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3 justify-items-center max-w-4xl mx-auto">
+                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2 sm:gap-3 justify-items-center max-w-4xl mx-auto px-2">
                   {couple.children
                     .filter(child => !child.ownFamily)
                     .map(child => (
@@ -74,7 +74,7 @@ export function HierarchicalFamilyView({
   };
   
   return (
-    <div className={`max-w-7xl mx-auto ${className}`}>
+    <div className={`max-w-7xl mx-auto px-4 ${className}`}>
       {/* Family tree header */}
       <div className="text-center mb-8">
         <h2 className="text-3xl font-bold text-gray-800 mb-2">

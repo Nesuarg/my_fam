@@ -90,7 +90,7 @@ export function CompactPersonCard({
     return (
       <a href={`/person/${person.id}/children`} className="block">
         <Card
-          className={`w-48 min-h-48 ${getGenderColor(person.gender)} border-2 shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden cursor-pointer ${className}`}
+          className={`w-full max-w-48 min-h-48 ${getGenderColor(person.gender)} border-2 shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden cursor-pointer ${className}`}
         >
           {cardContent}
         </Card>
@@ -100,7 +100,7 @@ export function CompactPersonCard({
 
   return (
     <Card
-      className={`w-48 min-h-48 ${getGenderColor(person.gender)} border-2 shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden ${enableNavigation ? 'cursor-pointer' : ''} ${className}`}
+      className={`w-full max-w-48 min-h-48 ${getGenderColor(person.gender)} border-2 shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden ${enableNavigation ? 'cursor-pointer' : ''} ${className}`}
       onClick={handleClick}
     >
       {cardContent}
