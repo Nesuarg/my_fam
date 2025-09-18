@@ -2,8 +2,8 @@ import type {
 	PopulatedCouple,
 	PopulatedFamilyTree,
 } from "@/types/simple-family";
-import { CompactCoupleCard } from "./CompactCoupleCard";
 import { CompactPersonCard } from "./CompactPersonCard";
+import { FamilyCard } from "./FamilyCard";
 
 interface FamilyGridViewProps {
 	familyTree: PopulatedFamilyTree;
@@ -35,8 +35,8 @@ export function FamilyGridView({
 			{/* Founding Couple at the Top */}
 			<div className="mb-12 flex justify-center">
 				<div className="max-w-md">
-					<CompactCoupleCard
-						couple={foundingCouple}
+					<FamilyCard
+						family={foundingCouple}
 						level={0}
 						enableNavigation={enableNavigation}
 					/>
@@ -52,8 +52,8 @@ export function FamilyGridView({
 					<div className="grid grid-cols-2 md:grid-cols-3 gap-6 auto-rows-fr">
 						{childrenWithFamilies.map((couple) => (
 							<div key={couple.id} className="flex">
-								<CompactCoupleCard
-									couple={couple}
+								<FamilyCard
+									family={couple}
 									level={1}
 									className="w-full"
 									enableNavigation={enableNavigation}

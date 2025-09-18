@@ -3,7 +3,7 @@ import type {
 	PopulatedFamilyTree,
 } from "@/types/simple-family";
 import type React from "react";
-import CompactCoupleCard from "./CompactCoupleCard";
+import FamilyCard from "./FamilyCard";
 import MiniPersonCard from "./MiniPersonCard";
 
 interface HierarchicalFamilyViewProps {
@@ -25,8 +25,8 @@ export function HierarchicalFamilyView({
 		return (
 			<div key={couple.id} className="mb-8">
 				{/* Render the couple */}
-				<CompactCoupleCard
-					couple={couple}
+				<FamilyCard
+					family={couple}
 					level={level}
 					enableNavigation={enableNavigation}
 				/>
@@ -64,7 +64,8 @@ export function HierarchicalFamilyView({
 								.filter((child) => child.ownFamily)
 								.map((child) => (
 									<div key={child.person.id} className="mt-8">
-										{renderCoupleAndChildren(child.ownFamily!, level + 1)}
+										{child.ownFamily &&
+											renderCoupleAndChildren(child.ownFamily, level + 1)}
 									</div>
 								))}
 						</div>

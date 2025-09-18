@@ -1,6 +1,5 @@
 import type { PopulatedCouple } from "@/types/simple-family";
-import { CompactCoupleCard } from "./CompactCoupleCard";
-import PersonCard from "./PersonCard";
+import FamilyCard from "./FamilyCard";
 
 interface CoupleChildrenViewProps {
 	couple: PopulatedCouple;
@@ -12,11 +11,7 @@ export function CoupleChildrenView({ couple }: CoupleChildrenViewProps) {
 			{/* Couple Information at Top */}
 			<div className="mb-12 flex justify-center">
 				<div className="max-w-md">
-					<CompactCoupleCard
-						couple={couple}
-						level={0}
-						enableNavigation={false}
-					/>
+					<FamilyCard family={couple} level={0} enableNavigation={false} />
 				</div>
 			</div>
 
@@ -27,7 +22,7 @@ export function CoupleChildrenView({ couple }: CoupleChildrenViewProps) {
 						Børn ({couple.children.length})
 					</h2>
 
-					<div className="flex flex-wrap gap-6">
+					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 						{couple.children
 							.sort((a, b) => (a.birthOrder || 0) - (b.birthOrder || 0))
 							.map((child) => (
@@ -37,13 +32,17 @@ export function CoupleChildrenView({ couple }: CoupleChildrenViewProps) {
 								>
 									{/* Child's Own Family (if they have one) */}
 									{child.ownFamily ? (
-										<CompactCoupleCard
-											couple={child.ownFamily}
+										<FamilyCard
+											family={child.ownFamily}
 											level={1}
 											enableNavigation={true}
 										/>
 									) : (
-										<PersonCard person={child.person} enableNavigation={true} />
+										<FamilyCard
+											singlePerson={child.person}
+											level={1}
+											enableNavigation={true}
+										/>
 									)}
 								</div>
 							))}
