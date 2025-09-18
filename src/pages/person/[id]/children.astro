@@ -1,16 +1,19 @@
 ---
 export const prerender = false;
 
-import '../../../styles/global.css';
-import ChildrenPage from '../../../components/ChildrenPage.tsx';
-import { smithFamilyTreeHierarchical } from '../../../types/hierarchical-family-example';
-import { findPersonById } from '../../../types/hierarchical-family-utils';
-
+import "../../../styles/global.css";
+import {
+	findPerson,
+	loadRawFamilyData,
+} from "../../../types/simple-family-utils";
 // Get the person ID from the URL parameters
 const { id } = Astro.params;
 
-// Find the person in our hierarchical family tree
-const person = findPersonById(smithFamilyTreeHierarchical, id as string);
+// Load the family data from couples.json
+const familyData = await loadRawFamilyData();
+
+// Find the person by ID
+const person = findPerson(familyData, id as string);
 
 // If person not found, we'll handle this in the component
 ---
@@ -22,9 +25,9 @@ const person = findPersonById(smithFamilyTreeHierarchical, id as string);
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<meta name="generator" content={Astro.generator} />
 		<title>
-			{person ? `${person.firstName} ${person.lastName} - Børn` : 'Person ikke fundet'} | Samtræ for Fabricius Familien
+			{person ? `${person.firstName} - Børn` : 'Person ikke fundet'} | Hansen Familie
 		</title>
-		<meta name="description" content={person ? `Udforsk ${person.firstName} ${person.lastName}s børn og efterkommere` : 'Person ikke fundet i familietræet'} />
+		<meta name="description" content={person ? `Udforsk ${person.firstName}s børn og efterkommere` : 'Person ikke fundet i familietræet'} />
 	</head>
 
 	<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
@@ -42,11 +45,41 @@ const person = findPersonById(smithFamilyTreeHierarchical, id as string);
 		</header>
 
 		<main class="max-w-7xl mx-auto px-4">
-			<ChildrenPage 
-				personId={id as string} 
-				familyTree={smithFamilyTreeHierarchical} 
-				client:load 
-			/>
+			{person ? (
+				<div class="py-8">
+					<div class="mb-8 text-center">
+						<h2 class="text-3xl font-bold text-gray-800 mb-2">
+							{person.firstName}
+						</h2>
+						<p class="text-lg text-gray-600">
+							{person.age ? `Alder: ${person.age}` : ''}
+							{person.dob && person.age ? ' • ' : ''}
+							{person.dob ? `Født: ${person.dob}` : ''}
+						</p>
+					</div>
+
+					<div class="text-center">
+						<h3 class="text-2xl font-semibold text-gray-800 mb-6">
+							Individuel person side - børn/familie kommer snart
+						</h3>
+						<p class="text-gray-600 mb-8">
+							Dette er en individuel person side for {person.firstName}. 
+							Navigation til børn og familie funktionalitet er under udvikling.
+						</p>
+						<a href="/" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium">
+							Tilbage til familietræet
+						</a>
+					</div>
+				</div>
+			) : (
+				<div class="py-8 text-center">
+					<h2 class="text-2xl font-semibold text-gray-800 mb-4">Person ikke fundet</h2>
+					<p class="text-gray-600">Kunne ikke finde en person med ID: {id}</p>
+					<a href="/" class="mt-4 inline-block bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors">
+						Tilbage til familietræet
+					</a>
+				</div>
+			)}
 		</main>
 
 		<footer class="bg-white border-t mt-16">

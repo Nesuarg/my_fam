@@ -1,0 +1,64 @@
+---
+export const prerender = false;
+
+import CoupleChildrenView from "../../../components/CoupleChildrenView.tsx";
+import "../../../styles/global.css";
+import { loadCoupleData } from "../../../types/simple-family-utils";
+
+// Get the couple ID from the URL parameters
+const { id } = Astro.params;
+
+// Load the couple data
+const couple = await loadCoupleData(id as string);
+---
+
+<html lang="da">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<meta name="generator" content={Astro.generator} />
+		<title>
+			{couple ? `${couple.person1.firstName}${couple.person2 ? ` & ${couple.person2.firstName}` : ""} - Familie` : 'Par ikke fundet'} | Hansen Familie
+		</title>
+		<meta name="description" content={couple ? `Udforsk ${couple.person1.firstName}${couple.person2 ? ` og ${couple.person2.firstName}` : ""}s familie og børn` : 'Par ikke fundet i familietræet'} />
+	</head>
+
+	<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
+		<header class="bg-white shadow-sm border-b">
+			<div class="max-w-7xl mx-auto px-4 py-6">
+				<nav class="mb-4">
+					<a href="/" class="text-blue-600 hover:text-blue-800 font-medium">
+						← Tilbage til familietræet
+					</a>
+				</nav>
+				<h1 class="text-4xl font-bold text-center text-gray-900">
+					🌳 Hansen Familie Træ
+				</h1>
+			</div>
+		</header>
+
+		<main class="max-w-7xl mx-auto px-4">
+			{couple ? (
+				<CoupleChildrenView 
+					couple={couple}
+					client:load 
+				/>
+			) : (
+				<div class="py-8 text-center">
+					<h2 class="text-2xl font-semibold text-gray-800 mb-4">Par ikke fundet</h2>
+					<p class="text-gray-600">Kunne ikke finde et par med ID: {id}</p>
+					<a href="/" class="mt-4 inline-block bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors">
+						Tilbage til familietræet
+					</a>
+				</div>
+			)}
+		</main>
+
+		<footer class="bg-white border-t mt-16">
+			<div class="max-w-7xl mx-auto px-4 py-6 text-center text-gray-600">
+				<p>Bevarer Hansen familiens historie for fremtidige generationer</p>
+			</div>
+		</footer>
+	</body>
+</html>

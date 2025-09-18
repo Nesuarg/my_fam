@@ -1,15 +1,13 @@
-import React from "react";
-import PersonCard from "./PersonCard";
-import PersonCardGrid from "./PersonCardGrid";
 import type { HierarchicalFamilyTree } from "@/types/hierarchical-family";
-import { 
-	getChildren, 
-	getFullName, 
-	getDisplayName, 
+import {
 	findPersonById,
 	findPersonsCouple,
-	getCoupleDisplayName 
+	getChildren,
+	getCoupleDisplayName,
+	getDisplayName,
 } from "@/types/hierarchical-family-utils";
+import PersonCard from "./PersonCard";
+import PersonCardGrid from "./PersonCardGrid";
 
 interface ChildrenPageProps {
 	personId: string;
@@ -19,7 +17,7 @@ interface ChildrenPageProps {
 export function ChildrenPage({ personId, familyTree }: ChildrenPageProps) {
 	// Get the person from the family tree
 	const person = findPersonById(familyTree, personId);
-	
+
 	if (!person) {
 		return (
 			<div className="py-8 text-center">
@@ -29,7 +27,10 @@ export function ChildrenPage({ personId, familyTree }: ChildrenPageProps) {
 				<p className="text-gray-600">
 					Kunne ikke finde en person med ID: {personId}
 				</p>
-				<a href="/" className="mt-4 inline-block bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors">
+				<a
+					href="/"
+					className="mt-4 inline-block bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
+				>
 					Tilbage til familietræet
 				</a>
 			</div>
@@ -38,10 +39,10 @@ export function ChildrenPage({ personId, familyTree }: ChildrenPageProps) {
 
 	// Get children using the hierarchical utility function
 	const children = getChildren(familyTree, personId);
-	
+
 	// Find the couple this person belongs to (if any)
 	const couple = findPersonsCouple(familyTree, personId);
-	
+
 	const getParentNames = () => {
 		if (couple) {
 			return getCoupleDisplayName(couple);
@@ -64,15 +65,21 @@ export function ChildrenPage({ personId, familyTree }: ChildrenPageProps) {
 					{getParentNames()}
 				</h2>
 				<p className="text-lg text-gray-600 mb-6">
-					{children.length === 0 ? "Ingen registrerede børn" : 
-					 children.length === 1 ? "1 registreret barn" : 
-					 `${children.length} registrerede børn`}
+					{children.length === 0
+						? "Ingen registrerede børn"
+						: children.length === 1
+							? "1 registreret barn"
+							: `${children.length} registrerede børn`}
 				</p>
-				
+
 				{/* Parent Cards */}
 				<div className="flex flex-wrap justify-center gap-4 mb-8">
-					{getParentCards().map(parentPerson => (
-						<PersonCard key={parentPerson.id} person={parentPerson} enableNavigation={false} />
+					{getParentCards().map((parentPerson) => (
+						<PersonCard
+							key={parentPerson.id}
+							person={parentPerson}
+							enableNavigation={false}
+						/>
 					))}
 				</div>
 			</div>

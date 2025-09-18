@@ -2,147 +2,163 @@
  * Utilities for loading and processing simplified family data from JSON
  */
 
-import type { 
-  SimplePerson, 
-  SimpleCouple, 
-  SimpleFamilyTree, 
-  PopulatedCouple, 
-  PopulatedFamilyTree 
-} from './simple-family';
+import type {
+	FamilyData,
+	PopulatedCouple,
+	PopulatedFamilyTree,
+	SimpleCouple,
+	SimplePerson,
+} from "./simple-family";
 
 /**
- * Load family data from JSON files (in Astro, we'll need to import them statically)
+ * Load family data from the couples.json file
  */
 export async function loadFamilyData(): Promise<PopulatedFamilyTree> {
-  // In a real app, these would be loaded from the content folder
-  // For now, we'll import them statically since we're in an Astro context
-  const { default: people } = await import('../../content/people.json');
-  const { default: couples } = await import('../../content/couples.json');
-  const { default: familyTree } = await import('../../content/family-tree.json');
-  
-  return populateFamilyTree(familyTree, people, couples);
+	// Import the couples.json file which contains both people and couples
+	const { default: familyData } = await import("../../content/couples.json");
+
+	return populateFamilyTree(familyData as FamilyData, "niels-peter-dorthea");
+}
+
+/**
+ * Load raw family data from the couples.json file
+ */
+export async function loadRawFamilyData(): Promise<FamilyData> {
+	// Import the couples.json file which contains both people and couples
+	const { default: familyData } = await import("../../content/couples.json");
+	return familyData as FamilyData;
+}
+
+/**
+ * Find a couple by ID and return its populated data
+ */
+export async function loadCoupleData(
+	coupleId: string,
+): Promise<PopulatedCouple | null> {
+	const { default: familyData } = await import("../../content/couples.json");
+	return populateCouple(familyData as FamilyData, coupleId);
+}
+
+/**
+ * Populate a single couple with its data
+ */
+export function populateCouple(
+	familyData: FamilyData,
+	coupleId: string,
+): PopulatedCouple | null {
+	// Create a lookup map for people
+	const personMap = new Map<string, SimplePerson>();
+	for (const person of familyData.people) {
+		personMap.set(person.id, person);
+	}
+
+	// Create a lookup map for couples
+	const coupleMap = new Map<string, SimpleCouple>();
+	for (const couple of familyData.couples) {
+		coupleMap.set(couple.id, couple);
+	}
+
+	// Find and populate the specific couple
+	const couple = coupleMap.get(coupleId);
+	if (!couple) return null;
+
+	const person1 = personMap.get(couple.person1Id);
+	const person2 = couple.person2Id
+		? (personMap.get(couple.person2Id) ?? null)
+		: null;
+
+	if (!person1) return null;
+
+	// Populate children if they exist
+	const populatedChildren = couple.children
+		?.map((child) => {
+			const person = personMap.get(child.personId);
+			if (!person) return null;
+
+			const result: NonNullable<PopulatedCouple["children"]>[0] = {
+				person,
+				birthOrder: child.birthOrder,
+				ownFamily: child.ownFamilyId
+					? (populateCouple(familyData, child.ownFamilyId) ?? undefined)
+					: undefined,
+			};
+			return result;
+		})
+		.filter(Boolean) as NonNullable<PopulatedCouple["children"]>;
+
+	return {
+		id: couple.id,
+		relationshipType: couple.relationshipType,
+		person1,
+		person2,
+		children: populatedChildren,
+	};
 }
 
 /**
  * Convert simple data structures to populated ones with full object references
  */
 export function populateFamilyTree(
-  familyTree: SimpleFamilyTree,
-  people: SimplePerson[],
-  couples: SimpleCouple[]
+	familyData: FamilyData,
+	foundingCoupleId: string,
 ): PopulatedFamilyTree {
-  // Create a lookup map for people
-  const personMap = new Map<string, SimplePerson>();
-  people.forEach(person => personMap.set(person.id, person));
-  
-  // Create a lookup map for couples
-  const coupleMap = new Map<string, SimpleCouple>();
-  couples.forEach(couple => coupleMap.set(couple.id, couple));
-  
-  // Function to populate a couple recursively
-  const populateCouple = (coupleId: string): PopulatedCouple | undefined => {
-    const couple = coupleMap.get(coupleId);
-    if (!couple) return undefined;
-    
-    const person1 = personMap.get(couple.person1Id);
-    const person2 = personMap.get(couple.person2Id);
-    
-    if (!person1 || !person2) return undefined;
-    
-    const populatedCouple: PopulatedCouple = {
-      id: couple.id,
-      relationshipType: couple.relationshipType,
-      person1,
-      person2,
-    };
-    
-    if (couple.children) {
-      populatedCouple.children = couple.children.map(child => {
-        const person = personMap.get(child.personId);
-        if (!person) throw new Error(`Person ${child.personId} not found`);
-        
-        const result: PopulatedCouple['children'][0] = {
-          person,
-          birthOrder: child.birthOrder,
-        };
-        
-        if (child.ownFamilyId) {
-          result.ownFamily = populateCouple(child.ownFamilyId);
-        }
-        
-        return result;
-      });
-    }
-    
-    return populatedCouple;
-  };
-  
-  const foundingCouple = populateCouple(familyTree.foundingCoupleId);
-  if (!foundingCouple) {
-    throw new Error(`Founding couple ${familyTree.foundingCoupleId} not found`);
-  }
-  
-  return {
-    id: familyTree.id,
-    name: familyTree.name,
-    description: familyTree.description,
-    foundingCouple,
-    allPeople: people,
-  };
+	const foundingCouple = populateCouple(familyData, foundingCoupleId);
+	if (!foundingCouple) {
+		throw new Error(`Founding couple ${foundingCoupleId} not found`);
+	}
+
+	return {
+		id: "hansen-family-tree",
+		name: "Hansen Family Tree",
+		description:
+			"Complete Hansen family tree starting from Niels Peter and Dorthea",
+		foundingCouple,
+		allPeople: familyData.people,
+	};
 }
 
 /**
- * Get all people from a populated family tree (flattened)
+ * Find all people who are children of the given couple
  */
-export function getAllPeople(familyTree: PopulatedFamilyTree): SimplePerson[] {
-  return familyTree.allPeople;
+export function getChildrenOfCouple(
+	familyData: FamilyData,
+	coupleId: string,
+): SimplePerson[] {
+	const couple = familyData.couples.find((c) => c.id === coupleId);
+	if (!couple || !couple.children) return [];
+
+	const personMap = new Map<string, SimplePerson>();
+	for (const person of familyData.people) {
+		personMap.set(person.id, person);
+	}
+
+	return couple.children
+		.map((child) => personMap.get(child.personId))
+		.filter(Boolean) as SimplePerson[];
 }
 
 /**
- * Calculate the level (generation) of a couple in the family tree
+ * Find a person by ID
  */
-export function calculateCoupleLevel(
-  couple: PopulatedCouple, 
-  rootCouple: PopulatedCouple
-): number {
-  if (couple.id === rootCouple.id) {
-    return 0;
-  }
-  
-  // Search through all children recursively
-  const searchChildren = (searchCouple: PopulatedCouple, currentLevel: number): number | null => {
-    if (!searchCouple.children) return null;
-    
-    for (const child of searchCouple.children) {
-      if (child.ownFamily?.id === couple.id) {
-        return currentLevel + 1;
-      }
-      
-      if (child.ownFamily) {
-        const found = searchChildren(child.ownFamily, currentLevel + 1);
-        if (found !== null) return found;
-      }
-    }
-    
-    return null;
-  };
-  
-  const level = searchChildren(rootCouple, 0);
-  return level !== null ? level : 0;
+export function findPerson(
+	familyData: FamilyData,
+	personId: string,
+): SimplePerson | null {
+	return familyData.people.find((person) => person.id === personId) || null;
 }
 
 /**
- * Get background color class for a specific level
+ * Get CSS class for background color based on generation level
  */
 export function getLevelBackgroundClass(level: number): string {
-  const backgrounds = [
-    'bg-blue-50',      // Level 0 (founding couple)
-    'bg-green-50',     // Level 1 (their children's families)
-    'bg-yellow-50',    // Level 2 (grandchildren's families)
-    'bg-purple-50',    // Level 3
-    'bg-pink-50',      // Level 4
-    'bg-indigo-50',    // Level 5
-  ];
-  
-  return backgrounds[level % backgrounds.length] || 'bg-gray-50';
+	const backgroundClasses = [
+		"bg-blue-50", // Level 0 - founding generation
+		"bg-green-50", // Level 1 - first generation
+		"bg-yellow-50", // Level 2 - second generation
+		"bg-purple-50", // Level 3 - third generation
+		"bg-pink-50", // Level 4 - fourth generation
+		"bg-indigo-50", // Level 5 - fifth generation
+	];
+
+	return backgroundClasses[level % backgroundClasses.length] || "bg-gray-50";
 }

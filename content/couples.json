@@ -1,35 +1,930 @@
-[
-  {
-    "id": "john-mary-couple",
-    "person1Id": "john-smith-1",
-    "person2Id": "mary-johnson-1",
-    "relationshipType": "married",
-    "children": [
-      {
-        "personId": "david-smith-1",
-        "birthOrder": 1,
-        "ownFamilyId": "david-emily-couple"
-      },
-      {
-        "personId": "sarah-smith-1",
-        "birthOrder": 2
-      }
-    ]
-  },
-  {
-    "id": "david-emily-couple",
-    "person1Id": "david-smith-1",
-    "person2Id": "emily-smith-1",
-    "relationshipType": "married",
-    "children": [
-      {
-        "personId": "michael-smith-1",
-        "birthOrder": 1
-      },
-      {
-        "personId": "sophia-smith-1",
-        "birthOrder": 2
-      }
-    ]
-  }
-]
+{
+	"people": [
+		{
+			"id": "niels-peter",
+			"firstName": "Niels Peter",
+			"lastName": "Hansen",
+			"age": 105,
+			"gender": "male",
+			"dob": "8/24/1919"
+		},
+		{
+			"id": "dorthea",
+			"firstName": "Dorthea",
+			"lastName": "Hansen",
+			"maidenName": "Andersen",
+			"age": 105,
+			"gender": "female",
+			"dob": "8/24/1919"
+		},
+		{
+			"id": "ninna",
+			"firstName": "Ninna",
+			"lastName": "Jensen",
+			"age": 33,
+			"gender": "female",
+			"dob": "7/22/1991"
+		},
+		{
+			"id": "jesper",
+			"firstName": "Jesper",
+			"lastName": "Jensen",
+			"age": 33,
+			"gender": "male",
+			"dob": "7/22/1991"
+		},
+		{
+			"id": "rene",
+			"firstName": "Rene",
+			"lastName": "Nielsen",
+			"age": 56,
+			"gender": "male",
+			"dob": "1/12/1968"
+		},
+		{
+			"id": "christina",
+			"firstName": "Christina",
+			"lastName": "Nielsen",
+			"maidenName": "Larsen",
+			"age": 56,
+			"gender": "female",
+			"dob": "1/12/1968"
+		},
+		{
+			"id": "mads",
+			"firstName": "Mads",
+			"lastName": "Petersen",
+			"age": 39,
+			"gender": "male",
+			"dob": "3/28/1985"
+		},
+		{
+			"id": "mette",
+			"firstName": "Mette",
+			"lastName": "Petersen",
+			"maidenName": "Hansen",
+			"age": 39,
+			"gender": "female",
+			"dob": "3/28/1985"
+		},
+		{
+			"id": "thea",
+			"firstName": "Thea",
+			"lastName": "Andersen",
+			"age": 34,
+			"gender": "female",
+			"dob": "5/12/1990"
+		},
+		{
+			"id": "andreas",
+			"firstName": "Andreas",
+			"lastName": "Andersen",
+			"age": 34,
+			"gender": "male",
+			"dob": "5/12/1990"
+		},
+		{
+			"id": "selma",
+			"firstName": "Selma",
+			"lastName": "Thomsen",
+			"age": 32,
+			"gender": "female",
+			"dob": "5/20/1992"
+		},
+		{
+			"id": "jens-selma-spouse",
+			"firstName": "Jens",
+			"lastName": "Thomsen",
+			"age": 32,
+			"gender": "male",
+			"dob": "5/20/1992"
+		},
+		{
+			"id": "bo",
+			"firstName": "Bo",
+			"lastName": "Paulsen",
+			"age": 58,
+			"gender": "male",
+			"dob": "4/2/1966"
+		},
+		{
+			"id": "akannguaq",
+			"firstName": "Akannguaq",
+			"lastName": "Paulsen",
+			"age": 58,
+			"gender": "female",
+			"dob": "4/2/1966"
+		},
+		{
+			"id": "peter",
+			"firstName": "Peter",
+			"lastName": "Paulsen",
+			"age": 56,
+			"gender": "male",
+			"dob": "4/7/1968"
+		},
+		{
+			"id": "camilla",
+			"firstName": "Camilla",
+			"lastName": "Paulsen",
+			"maidenName": "Sørensen",
+			"age": 56,
+			"gender": "female",
+			"dob": "4/7/1968"
+		},
+		{
+			"id": "helle",
+			"firstName": "Helle",
+			"lastName": "Madsen",
+			"age": 56,
+			"gender": "female",
+			"dob": "1/31/1968"
+		},
+		{
+			"id": "preben",
+			"firstName": "Preben",
+			"lastName": "Madsen",
+			"age": 56,
+			"gender": "male",
+			"dob": "1/31/1968"
+		},
+		{
+			"id": "kamille",
+			"firstName": "Kamille",
+			"lastName": "Eriksen",
+			"age": 38,
+			"gender": "female",
+			"dob": "4/15/1986"
+		},
+		{
+			"id": "christian-kamille-spouse",
+			"firstName": "Christian",
+			"lastName": "Eriksen",
+			"age": 38,
+			"gender": "male",
+			"dob": "4/15/1986"
+		},
+		{
+			"id": "mikkel-asbjorn",
+			"firstName": "Mikkel Asbjørn",
+			"lastName": "Carlsen",
+			"age": 34,
+			"gender": "male",
+			"dob": "5/5/1990"
+		},
+		{
+			"id": "mathilde",
+			"firstName": "Mathilde",
+			"lastName": "Carlsen",
+			"maidenName": "Olsen",
+			"age": 34,
+			"gender": "female",
+			"dob": "5/5/1990"
+		},
+		{
+			"id": "ida-marie",
+			"firstName": "Ida Marie",
+			"lastName": "Rasmussen",
+			"age": 30,
+			"gender": "female",
+			"dob": "10/9/1994"
+		},
+		{
+			"id": "martin",
+			"firstName": "Martin",
+			"lastName": "Rasmussen",
+			"age": 30,
+			"gender": "male",
+			"dob": "10/9/1994"
+		},
+		{
+			"id": "sidsel",
+			"firstName": "Sidsel",
+			"lastName": "Hansen",
+			"age": 38,
+			"gender": "female",
+			"dob": "10/12/1986"
+		},
+		{
+			"id": "jon",
+			"firstName": "Jon",
+			"lastName": "Hansen",
+			"age": 38,
+			"gender": "male",
+			"dob": "10/12/1986"
+		},
+		{
+			"id": "jens",
+			"firstName": "Jens",
+			"lastName": "Hansen",
+			"age": 69,
+			"gender": "male",
+			"dob": "3/23/1955"
+		},
+		{
+			"id": "rita",
+			"firstName": "Rita",
+			"lastName": "Hansen",
+			"maidenName": "Nielsen",
+			"age": 69,
+			"gender": "female",
+			"dob": "3/23/1955"
+		},
+		{
+			"id": "signe",
+			"firstName": "Signe",
+			"lastName": "Christensen",
+			"age": 36,
+			"gender": "female",
+			"dob": "9/21/1988"
+		},
+		{
+			"id": "kasper",
+			"firstName": "Kasper",
+			"lastName": "Christensen",
+			"age": 36,
+			"gender": "male",
+			"dob": "9/21/1988"
+		},
+		{
+			"id": "bjorn",
+			"firstName": "Bjørn",
+			"lastName": "Hansen",
+			"age": 40,
+			"gender": "male",
+			"dob": "10/16/1984"
+		},
+		{
+			"id": "anne",
+			"firstName": "Anne",
+			"lastName": "Hansen",
+			"maidenName": "Pedersen",
+			"age": 40,
+			"gender": "female",
+			"dob": "10/16/1984"
+		},
+		{
+			"id": "niels-johannes-son",
+			"firstName": "Niels",
+			"lastName": "Johannesen",
+			"age": 45,
+			"gender": "male",
+			"dob": "2/13/1979"
+		},
+		{
+			"id": "ingvild",
+			"firstName": "Ingvild",
+			"lastName": "Johannesen",
+			"maidenName": "Berg",
+			"age": 45,
+			"gender": "female",
+			"dob": "2/13/1979"
+		},
+		{
+			"id": "hans",
+			"firstName": "Hans",
+			"lastName": "Johannesen",
+			"age": 49,
+			"gender": "male",
+			"dob": "4/8/1975"
+		},
+		{
+			"id": "marta",
+			"firstName": "Marta",
+			"lastName": "Johannesen",
+			"maidenName": "Skov",
+			"age": 49,
+			"gender": "female",
+			"dob": "4/8/1975"
+		},
+		{
+			"id": "mette-christian-wife",
+			"firstName": "Mette",
+			"lastName": "Johannesen",
+			"age": 51,
+			"gender": "female",
+			"dob": "7/19/1973"
+		},
+		{
+			"id": "christian-mette-husband",
+			"firstName": "Christian",
+			"lastName": "Johannesen",
+			"age": 51,
+			"gender": "male",
+			"dob": "7/19/1973"
+		},
+		{
+			"id": "emil",
+			"firstName": "Emil",
+			"lastName": "Thomsen",
+			"age": 34,
+			"gender": "male",
+			"dob": "7/26/1990"
+		},
+		{
+			"id": "simon",
+			"firstName": "Simon",
+			"lastName": "Thomsen",
+			"age": 32,
+			"gender": "male",
+			"dob": "9/30/1992"
+		},
+		{
+			"id": "trine",
+			"firstName": "Trine",
+			"lastName": "Thomsen",
+			"maidenName": "Larsen",
+			"age": 32,
+			"gender": "female",
+			"dob": "9/30/1992"
+		},
+		{
+			"id": "iben",
+			"firstName": "Iben",
+			"lastName": "Petersen",
+			"age": 11,
+			"gender": "female",
+			"dob": "8/11/2013"
+		},
+		{
+			"id": "kirsten",
+			"firstName": "Kirsten",
+			"lastName": "Petersen",
+			"age": 8,
+			"gender": "female",
+			"dob": "3/30/2016"
+		},
+		{
+			"id": "bodil",
+			"firstName": "Bodil",
+			"lastName": "Hansen",
+			"age": 66,
+			"gender": "female",
+			"dob": "7/23/1958"
+		},
+		{
+			"id": "carl",
+			"firstName": "Carl",
+			"lastName": "Hansen",
+			"age": 66,
+			"gender": "male",
+			"dob": "7/23/1958"
+		},
+		{
+			"id": "paul-erik",
+			"firstName": "Paul Erik",
+			"lastName": "Hansen",
+			"age": 61,
+			"gender": "male",
+			"dob": "1/25/1963"
+		},
+		{
+			"id": "ulla",
+			"firstName": "Ulla",
+			"lastName": "Hansen",
+			"maidenName": "Petersen",
+			"age": 61,
+			"gender": "female",
+			"dob": "1/25/1963"
+		},
+		{
+			"id": "ruth",
+			"firstName": "Ruth",
+			"lastName": "Hansen",
+			"age": 67,
+			"gender": "female",
+			"dob": "1/14/1957"
+		},
+		{
+			"id": "jesper-ruth-husband",
+			"firstName": "Jesper",
+			"lastName": "Hansen",
+			"age": 67,
+			"gender": "male",
+			"dob": "1/14/1957"
+		},
+		{
+			"id": "karen",
+			"firstName": "Karen",
+			"lastName": "Hansen",
+			"age": 71,
+			"gender": "female",
+			"dob": "1/9/1953"
+		},
+		{
+			"id": "tomas",
+			"firstName": "Tomas",
+			"lastName": "Hansen",
+			"age": 71,
+			"gender": "male",
+			"dob": "1/9/1953"
+		},
+		{
+			"id": "grete",
+			"firstName": "Grete",
+			"lastName": "Paulsen",
+			"age": 81,
+			"gender": "female",
+			"dob": "4/4/1943"
+		},
+		{
+			"id": "paul-arne",
+			"firstName": "Paul Arne",
+			"lastName": "Paulsen",
+			"age": 81,
+			"gender": "male",
+			"dob": "4/4/1943"
+		},
+		{
+			"id": "birthe",
+			"firstName": "Birthe",
+			"lastName": "Nielsen",
+			"age": 78,
+			"gender": "female",
+			"dob": "1/30/1946"
+		},
+		{
+			"id": "jens-birthe-husband",
+			"firstName": "Jens",
+			"lastName": "Nielsen",
+			"age": 78,
+			"gender": "male",
+			"dob": "1/30/1946"
+		},
+		{
+			"id": "johannes",
+			"firstName": "Johannes",
+			"lastName": "Hansen",
+			"age": 80,
+			"gender": "male",
+			"dob": "5/23/1944"
+		},
+		{
+			"id": "lene",
+			"firstName": "Lene",
+			"lastName": "Hansen",
+			"maidenName": "Sørensen",
+			"age": 80,
+			"gender": "female",
+			"dob": "5/23/1944"
+		},
+		{
+			"id": "thomas",
+			"firstName": "Thomas",
+			"lastName": "Hansen",
+			"age": 76,
+			"gender": "male",
+			"dob": "7/13/1948"
+		},
+		{
+			"id": "ingemai",
+			"firstName": "Ingemai",
+			"lastName": "Carlsen",
+			"age": 64,
+			"gender": "female",
+			"dob": "10/13/1960"
+		},
+		{
+			"id": "carsten",
+			"firstName": "Carsten",
+			"lastName": "Carlsen",
+			"age": 64,
+			"gender": "male",
+			"dob": "10/13/1960"
+		},
+		{
+			"id": "theo",
+			"firstName": "Theo",
+			"lastName": "Jensen",
+			"age": 6,
+			"gender": "male",
+			"dob": "7/24/2018"
+		},
+		{
+			"id": "emma",
+			"firstName": "Emma",
+			"lastName": "Jensen",
+			"age": 2,
+			"gender": "female",
+			"dob": "2/6/2022"
+		},
+		{
+			"id": "asta",
+			"firstName": "Asta",
+			"lastName": "Hansen",
+			"age": 30,
+			"gender": "female",
+			"dob": "5/8/1994"
+		},
+		{
+			"id": "ejgil",
+			"firstName": "Ejgil",
+			"lastName": "Hansen",
+			"age": 35,
+			"gender": "male",
+			"dob": "7/8/1989"
+		},
+		{
+			"id": "alfred",
+			"firstName": "Alfred",
+			"lastName": "Hansen",
+			"age": 33,
+			"gender": "male",
+			"dob": "8/19/1991"
+		},
+		{
+			"id": "ole",
+			"firstName": "Ole",
+			"lastName": "Andersen",
+			"age": 2,
+			"gender": "male",
+			"dob": "7/27/2022"
+		},
+		{
+			"id": "sophus",
+			"firstName": "Sophus",
+			"lastName": "Hansen",
+			"age": 27,
+			"gender": "male",
+			"dob": "2/5/1997"
+		}
+	],
+	"couples": [
+		{
+			"id": "niels-peter-dorthea",
+			"person1Id": "niels-peter",
+			"person2Id": "dorthea",
+			"relationshipType": "married",
+			"children": [
+				{
+					"personId": "grete",
+					"birthOrder": 1,
+					"ownFamilyId": "grete-paul-arne"
+				},
+				{
+					"personId": "johannes",
+					"birthOrder": 2,
+					"ownFamilyId": "johannes-lene"
+				},
+				{
+					"personId": "birthe",
+					"birthOrder": 3,
+					"ownFamilyId": "birthe-jens"
+				},
+				{
+					"personId": "thomas",
+					"birthOrder": 4
+				},
+				{
+					"personId": "karen",
+					"birthOrder": 5,
+					"ownFamilyId": "karen-tomas"
+				},
+				{
+					"personId": "jens",
+					"birthOrder": 6,
+					"ownFamilyId": "jens-rita"
+				},
+				{
+					"personId": "ruth",
+					"birthOrder": 7,
+					"ownFamilyId": "ruth-jesper"
+				},
+				{
+					"personId": "bodil",
+					"birthOrder": 8,
+					"ownFamilyId": "bodil-carl"
+				},
+				{
+					"personId": "ingemai",
+					"birthOrder": 9,
+					"ownFamilyId": "ingemai-carsten"
+				},
+				{
+					"personId": "paul-erik",
+					"birthOrder": 10,
+					"ownFamilyId": "paul-erik-ulla"
+				}
+			]
+		},
+		{
+			"id": "grete-paul-arne",
+			"person1Id": "grete",
+			"person2Id": "paul-arne",
+			"relationshipType": "married",
+			"children": [
+				{
+					"personId": "bo",
+					"birthOrder": 1,
+					"ownFamilyId": "bo-akannguaq"
+				},
+				{
+					"personId": "peter",
+					"birthOrder": 2,
+					"ownFamilyId": "peter-camilla"
+				},
+				{
+					"personId": "helle",
+					"birthOrder": 3,
+					"ownFamilyId": "helle-preben"
+				}
+			]
+		},
+		{
+			"id": "johannes-lene",
+			"person1Id": "johannes",
+			"person2Id": "lene",
+			"relationshipType": "married",
+			"children": [
+				{
+					"personId": "mette-christian-wife",
+					"birthOrder": 1,
+					"ownFamilyId": "mette-christian"
+				},
+				{
+					"personId": "hans",
+					"birthOrder": 2,
+					"ownFamilyId": "hans-marta"
+				},
+				{
+					"personId": "niels-johannes-son",
+					"birthOrder": 3,
+					"ownFamilyId": "niels-ingvild"
+				}
+			]
+		},
+		{
+			"id": "birthe-jens",
+			"person1Id": "birthe",
+			"person2Id": "jens-birthe-husband",
+			"relationshipType": "married",
+			"children": [
+				{
+					"personId": "rene",
+					"birthOrder": 1,
+					"ownFamilyId": "rene-christina"
+				}
+			]
+		},
+		{
+			"id": "karen-tomas",
+			"person1Id": "karen",
+			"person2Id": "tomas",
+			"relationshipType": "married",
+			"children": [
+				{
+					"personId": "emil",
+					"birthOrder": 1
+				},
+				{
+					"personId": "simon",
+					"birthOrder": 2,
+					"ownFamilyId": "simon-trine"
+				}
+			]
+		},
+		{
+			"id": "jens-rita",
+			"person1Id": "jens",
+			"person2Id": "rita",
+			"relationshipType": "married",
+			"children": [
+				{
+					"personId": "sidsel",
+					"birthOrder": 1,
+					"ownFamilyId": "sidsel-jon"
+				},
+				{
+					"personId": "signe",
+					"birthOrder": 2,
+					"ownFamilyId": "signe-kasper"
+				},
+				{
+					"personId": "bjorn",
+					"birthOrder": 3,
+					"ownFamilyId": "bjorn-anne"
+				}
+			]
+		},
+		{
+			"id": "ruth-jesper",
+			"person1Id": "ruth",
+			"person2Id": "jesper-ruth-husband",
+			"relationshipType": "married",
+			"children": [
+				{
+					"personId": "ejgil",
+					"birthOrder": 1
+				},
+				{
+					"personId": "alfred",
+					"birthOrder": 2
+				}
+			]
+		},
+		{
+			"id": "bodil-carl",
+			"person1Id": "bodil",
+			"person2Id": "carl",
+			"relationshipType": "married",
+			"children": [
+				{
+					"personId": "mads",
+					"birthOrder": 1,
+					"ownFamilyId": "mads-mette"
+				},
+				{
+					"personId": "thea",
+					"birthOrder": 2,
+					"ownFamilyId": "thea-andreas"
+				},
+				{
+					"personId": "selma",
+					"birthOrder": 3,
+					"ownFamilyId": "selma-jens"
+				}
+			]
+		},
+		{
+			"id": "ingemai-carsten",
+			"person1Id": "ingemai",
+			"person2Id": "carsten",
+			"relationshipType": "married",
+			"children": [
+				{
+					"personId": "kamille",
+					"birthOrder": 1,
+					"ownFamilyId": "kamille-christian"
+				},
+				{
+					"personId": "mikkel-asbjorn",
+					"birthOrder": 2,
+					"ownFamilyId": "mikkel-mathilde"
+				},
+				{
+					"personId": "ida-marie",
+					"birthOrder": 3,
+					"ownFamilyId": "ida-marie-martin"
+				}
+			]
+		},
+		{
+			"id": "paul-erik-ulla",
+			"person1Id": "paul-erik",
+			"person2Id": "ulla",
+			"relationshipType": "married",
+			"children": [
+				{
+					"personId": "asta",
+					"birthOrder": 1
+				}
+			]
+		},
+		{
+			"id": "ninna-jesper",
+			"person1Id": "ninna",
+			"person2Id": "jesper",
+			"relationshipType": "married",
+			"children": [
+				{
+					"personId": "theo",
+					"birthOrder": 1
+				},
+				{
+					"personId": "emma",
+					"birthOrder": 2
+				}
+			]
+		},
+		{
+			"id": "rene-christina",
+			"person1Id": "rene",
+			"person2Id": "christina",
+			"relationshipType": "married"
+		},
+		{
+			"id": "mads-mette",
+			"person1Id": "mads",
+			"person2Id": "mette",
+			"relationshipType": "married",
+			"children": [
+				{
+					"personId": "iben",
+					"birthOrder": 1
+				},
+				{
+					"personId": "kirsten",
+					"birthOrder": 2
+				}
+			]
+		},
+		{
+			"id": "thea-andreas",
+			"person1Id": "thea",
+			"person2Id": "andreas",
+			"relationshipType": "married",
+			"children": [
+				{
+					"personId": "ole",
+					"birthOrder": 1
+				}
+			]
+		},
+		{
+			"id": "selma-jens",
+			"person1Id": "selma",
+			"person2Id": "jens-selma-spouse",
+			"relationshipType": "married"
+		},
+		{
+			"id": "bo-akannguaq",
+			"person1Id": "bo",
+			"person2Id": "akannguaq",
+			"relationshipType": "married"
+		},
+		{
+			"id": "peter-camilla",
+			"person1Id": "peter",
+			"person2Id": "camilla",
+			"relationshipType": "married"
+		},
+		{
+			"id": "helle-preben",
+			"person1Id": "helle",
+			"person2Id": "preben",
+			"relationshipType": "married"
+		},
+		{
+			"id": "kamille-christian",
+			"person1Id": "kamille",
+			"person2Id": "christian-kamille-spouse",
+			"relationshipType": "married"
+		},
+		{
+			"id": "mikkel-mathilde",
+			"person1Id": "mikkel-asbjorn",
+			"person2Id": "mathilde",
+			"relationshipType": "married"
+		},
+		{
+			"id": "ida-marie-martin",
+			"person1Id": "ida-marie",
+			"person2Id": "martin",
+			"relationshipType": "married"
+		},
+		{
+			"id": "sidsel-jon",
+			"person1Id": "sidsel",
+			"person2Id": "jon",
+			"relationshipType": "married"
+		},
+		{
+			"id": "signe-kasper",
+			"person1Id": "signe",
+			"person2Id": "kasper",
+			"relationshipType": "married"
+		},
+		{
+			"id": "bjorn-anne",
+			"person1Id": "bjorn",
+			"person2Id": "anne",
+			"relationshipType": "married"
+		},
+		{
+			"id": "niels-ingvild",
+			"person1Id": "niels-johannes-son",
+			"person2Id": "ingvild",
+			"relationshipType": "married"
+		},
+		{
+			"id": "hans-marta",
+			"person1Id": "hans",
+			"person2Id": "marta",
+			"relationshipType": "married"
+		},
+		{
+			"id": "mette-christian",
+			"person1Id": "mette-christian-wife",
+			"person2Id": "christian-mette-husband",
+			"relationshipType": "married"
+		},
+		{
+			"id": "simon-trine",
+			"person1Id": "simon",
+			"person2Id": "trine",
+			"relationshipType": "married"
+		},
+		{
+			"id": "thomas-single",
+			"person1Id": "thomas",
+			"person2Id": null,
+			"relationshipType": "single",
+			"children": [
+				{
+					"personId": "sophus",
+					"birthOrder": 1
+				}
+			]
+		}
+	]
+}
