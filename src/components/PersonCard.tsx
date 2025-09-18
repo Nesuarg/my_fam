@@ -1,6 +1,5 @@
-import React from "react";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import type { Person as HierarchicalPerson } from "@/types/hierarchical-family";
 import { calculateAge, formatDate } from "@/types/hierarchical-family-utils";
 
@@ -11,7 +10,12 @@ interface PersonCardProps {
 	enableNavigation?: boolean;
 }
 
-export function PersonCard({ person, className = "", onPersonClick, enableNavigation = true }: PersonCardProps) {
+export function PersonCard({
+	person,
+	className = "",
+	onPersonClick,
+	enableNavigation = true,
+}: PersonCardProps) {
 	const age = person.birthDate
 		? calculateAge(person.birthDate, person.deathDate)
 		: null;
@@ -64,18 +68,17 @@ export function PersonCard({ person, className = "", onPersonClick, enableNaviga
 				<div className="w-20 h-20 mx-auto mb-2 rounded-full bg-gradient-to-br from-slate-200 to-slate-300 flex items-center justify-center border-4 border-white shadow-md">
 					<span className="text-xl font-bold text-slate-600">
 						{person.firstName.charAt(0)}
-						{person.lastName.charAt(0)}
 					</span>
 				</div>
 
 				{/* Name */}
 				<div className="text-center">
 					<h3 className="font-bold text-base leading-tight mb-1">
-						{person.firstName} {person.lastName}
+						{person.firstName}
 					</h3>
-					{person.maidenName && person.maidenName !== person.lastName && (
+					{person.maidenName && (
 						<p className="text-xs text-gray-600 italic">
-							(née {person.maidenName})
+							(f. {person.maidenName})
 						</p>
 					)}
 				</div>
@@ -136,7 +139,7 @@ export function PersonCard({ person, className = "", onPersonClick, enableNaviga
 
 	return (
 		<Card
-			className={`w-64 min-h-80 ${getGenderColor(person.gender)} border-2 shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden ${enableNavigation ? 'cursor-pointer' : ''} ${className}`}
+			className={`w-64 min-h-80 ${getGenderColor(person.gender)} border-2 shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden ${enableNavigation ? "cursor-pointer" : ""} ${className}`}
 			onClick={handleClick}
 		>
 			{cardContent}
