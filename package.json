@@ -6,7 +6,9 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@astrojs/mdx": "^4.3.4",
@@ -30,6 +32,7 @@
     "tailwindcss": "^4.1.3"
   },
   "devDependencies": {
-    "tw-animate-css": "^1.3.8"
+    "tw-animate-css": "^1.3.8",
+    "vitest": "^4.1.2"
   }
 }
