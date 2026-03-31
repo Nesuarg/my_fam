@@ -208,7 +208,7 @@ export function computeTreeLayout(
  */
 export function computeBaselinePositions(
   nodes: WheelNode[],
-  layoutMode: "wheel" | "birthOrder" | "branchSize",
+  layoutMode: "wheel" | "birthOrder" | "branchSize" | "tree",
   width: number,
   height: number,
 ): Map<string, { x: number; y: number }> {
@@ -220,6 +220,9 @@ export function computeBaselinePositions(
       break;
     case "branchSize":
       positions = computeBranchSizeLayout(nodes, rootBirthYear, width, height);
+      break;
+    case "tree":
+      positions = computeTreeLayout(nodes, rootBirthYear, width, height);
       break;
     default:
       positions = computeWheelLayout(nodes, rootBirthYear, width, height);

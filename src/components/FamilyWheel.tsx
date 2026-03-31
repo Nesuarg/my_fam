@@ -6,6 +6,7 @@ import {
   computeWheelLayout,
   computeBirthOrderLayout,
   computeBranchSizeLayout,
+  computeTreeLayout,
   computeBaselinePositions,
 } from "@/lib/wheel-layouts";
 import { useShareableView } from "@/lib/view-state";
@@ -20,7 +21,7 @@ import SyncBadge from "./SyncBadge";
 const GEN_COLORS = ["#f59e0b", "#3b82f6", "#10b981", "#8b5cf6"];
 const GEN_RADII = [22, 15, 12, 10];
 
-type LayoutMode = "wheel" | "birthOrder" | "branchSize";
+type LayoutMode = "wheel" | "birthOrder" | "branchSize" | "tree";
 
 interface Props {
   familyData: FamilyData;
@@ -59,6 +60,8 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
           return computeBirthOrderLayout(nodes, rootBirthYear, width, height);
         case "branchSize":
           return computeBranchSizeLayout(nodes, rootBirthYear, width, height);
+        case "tree":
+          return computeTreeLayout(nodes, rootBirthYear, width, height);
         default:
           return computeWheelLayout(nodes, rootBirthYear, width, height);
       }
@@ -513,7 +516,7 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
 
       {/* Layout mode buttons + label toggle */}
       <div className="absolute top-5 right-5 z-10 flex gap-2">
-        {(["wheel", "birthOrder", "branchSize"] as const).map((mode) => (
+        {(["wheel", "birthOrder", "branchSize", "tree"] as const).map((mode) => (
           <button
             key={mode}
             onClick={() => setLayoutMode(mode)}
@@ -523,7 +526,7 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
                 : "bg-[#1e2030] border-[#2a2d3e] text-gray-400 hover:bg-[#2a2d3e] hover:text-white"
             }`}
           >
-            {mode === "wheel" ? "Hjul" : mode === "birthOrder" ? "Fodselsdato" : "Grenstorrelse"}
+            {mode === "wheel" ? "Hjul" : mode === "birthOrder" ? "Fodselsdato" : mode === "branchSize" ? "Grenstorrelse" : "Trae"}
           </button>
         ))}
         <button
