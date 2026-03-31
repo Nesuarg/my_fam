@@ -111,6 +111,21 @@ describe("applyEditPerson", () => {
     expect(person?.lastName).toBe("Smith");
   });
 
+  it("updates dob and recalculates age", () => {
+    const data = makeData();
+    const result = applyEditPerson(data, "alice", { dob: "1/1/1990" });
+    const person = result.people.find((p) => p.id === "alice");
+    expect(person?.dob).toBe("1/1/1990");
+    expect(person?.age).toBe(new Date().getFullYear() - 1990);
+  });
+
+  it("updates gender", () => {
+    const data = makeData();
+    const result = applyEditPerson(data, "alice", { gender: "other" });
+    const person = result.people.find((p) => p.id === "alice");
+    expect(person?.gender).toBe("other");
+  });
+
   it("throws if person not found", () => {
     const data = makeData();
     expect(() => applyEditPerson(data, "nobody", { firstName: "X" })).toThrow("Person nobody not found");

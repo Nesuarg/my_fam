@@ -117,4 +117,31 @@ describe("buildWheelGraph", () => {
     const gen1 = nodes.find((n) => n.coupleId === "grete-paul");
     expect(gen1?.birthOrder).toBe(1);
   });
+
+  it("identifies Fabricius person when listed as person2Id", () => {
+    // Grete (Fabricius child "c") is listed as person2Id in this couple
+    const swapped: FamilyData = {
+      people: minimalFamily.people,
+      couples: [
+        {
+          id: "root",
+          person1Id: "a",
+          person2Id: "b",
+          relationshipType: "married",
+          children: [{ personId: "c", birthOrder: 1, ownFamilyId: "paul-grete" }],
+        },
+        {
+          id: "paul-grete",
+          person1Id: "d", // Paul is person1
+          person2Id: "c", // Grete (Fabricius) is person2
+          relationshipType: "married",
+        },
+      ],
+    };
+    const { nodes } = buildWheelGraph(swapped, "root");
+    const couple = nodes.find((n) => n.coupleId === "paul-grete");
+    expect(couple?.fabriciusPerson.id).toBe("c"); // Grete
+    expect(couple?.partnerPerson?.id).toBe("d"); // Paul
+    expect(couple?.birthYear).toBe(1943); // Grete's birth year
+  });
 });
