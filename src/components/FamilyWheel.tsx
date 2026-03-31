@@ -7,6 +7,11 @@ import {
   computeBirthOrderLayout,
   computeBranchSizeLayout,
 } from "@/lib/wheel-layouts";
+import { applyAddChild, applyAddCouple, applyEditPerson } from "@/lib/family-edits";
+import { getStoredPassword, storePassword, addChild as apiAddChild, addCouple as apiAddCouple, editPerson as apiEditPerson, validatePassword } from "@/lib/family-api";
+import PasswordModal from "./PasswordModal";
+import EditPanel from "./EditPanel";
+import SyncBadge from "./SyncBadge";
 
 const GEN_COLORS = ["#f59e0b", "#3b82f6", "#10b981", "#8b5cf6"];
 const GEN_RADII = [22, 15, 12, 10];
@@ -21,13 +26,24 @@ interface Props {
 export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
   const svgRef = useRef<SVGSVGElement>(null);
   const [layoutMode, setLayoutMode] = useState<LayoutMode>("wheel");
-  const [tooltip, setTooltip] = useState<{
+  const [showLabels, setShowLabels] = useState(true);
+  const [hoveredNode, setHoveredNode] = useState<{
     node: WheelNode;
-    x: number;
-    y: number;
+    mouseX: number;
+    mouseY: number;
   } | null>(null);
   const graphRef = useRef<{ nodes: WheelNode[]; links: WheelLink[] } | null>(null);
   const simulationRef = useRef<d3.Simulation<WheelNode, WheelLink> | null>(null);
+  const zoomScaleRef = useRef(1);
+  const labelSelRef = useRef<d3.Selection<SVGTextElement, WheelNode, SVGGElement, unknown> | null>(null);
+  const sublabelSelRef = useRef<d3.Selection<SVGTextElement, WheelNode, SVGGElement, unknown> | null>(null);
+  const [editMode, setEditMode] = useState(false);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [password, setPassword] = useState<string | null>(getStoredPassword);
+  const [localData, setLocalData] = useState<FamilyData>(familyData);
+  const [editNode, setEditNode] = useState<{ node: WheelNode; x: number; y: number } | null>(null);
+  const [syncTimestamp, setSyncTimestamp] = useState<number | null>(null);
 
   const getLayout = useCallback(
     (nodes: WheelNode[], width: number, height: number) => {
@@ -55,7 +71,7 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
 
     // Build graph only once
     if (!graphRef.current) {
-      graphRef.current = buildWheelGraph(familyData, rootCoupleId);
+      graphRef.current = buildWheelGraph(localData, rootCoupleId);
     }
     const { nodes, links } = graphRef.current;
 
@@ -76,10 +92,17 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
 
     const g = sel.append("g");
 
-    // Zoom
+    // Zoom — counter-scale node labels to keep constant screen size
     const zoom = d3.zoom<SVGSVGElement, unknown>()
       .scaleExtent([0.3, 3])
-      .on("zoom", (event) => g.attr("transform", event.transform));
+      .on("zoom", (event) => {
+        g.attr("transform", event.transform);
+        const k = event.transform.k;
+        zoomScaleRef.current = k;
+        // Only counter-scale node labels, not ring labels
+        g.selectAll<SVGTextElement, unknown>(".node-label, .node-sublabel")
+          .attr("transform", `scale(${1 / k})`);
+      });
     sel.call(zoom);
 
     // Decade guide rings
@@ -137,6 +160,7 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
       .join("g")
       .attr("cursor", "grab")
       .on("mouseenter", (_event, d) => {
+        // Highlight connections
         nodeSel.attr("opacity", (n) => {
           if (n.coupleId === d.coupleId) return 1;
           if (n.parentCoupleId === d.coupleId) return 1;
@@ -148,47 +172,63 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
           return 0.05;
         });
       })
+      .on("mousemove", (event, d) => {
+        const [mx, my] = d3.pointer(event, svg);
+        setHoveredNode({ node: d, mouseX: mx, mouseY: my });
+      })
       .on("mouseleave", () => {
         nodeSel.attr("opacity", 1);
         linkSel.attr("opacity", 0.25);
+        setHoveredNode(null);
       })
       .on("click", (event, d) => {
-        event.stopPropagation();
-        setTooltip({ node: d, x: d.x ?? 0, y: d.y ?? 0 });
+        if (editMode) {
+          event.stopPropagation();
+          const [mx, my] = d3.pointer(event, svg);
+          setEditNode({ node: d, x: mx, y: my });
+        }
       });
 
     // Circle for each node
     nodeSel
       .append("circle")
       .attr("r", (d) => GEN_RADII[Math.min(d.generation, GEN_RADII.length - 1)])
-      .attr("fill", (d) =>
-        d.isSingle ? "none" : GEN_COLORS[Math.min(d.generation, GEN_COLORS.length - 1)],
-      )
+      .attr("fill", (d) => {
+        const color = GEN_COLORS[Math.min(d.generation, GEN_COLORS.length - 1)];
+        return d.isSingle ? color + "33" : color;
+      })
       .attr("stroke", (d) => GEN_COLORS[Math.min(d.generation, GEN_COLORS.length - 1)])
       .attr("stroke-width", (d) => (d.isSingle ? 1.5 : 0));
 
-    // Branch label above
-    nodeSel
+    // Full name above
+    const labelsSel = nodeSel
       .append("text")
+      .attr("class", "node-label")
       .attr("text-anchor", "middle")
       .attr("dy", (d) => -(GEN_RADII[Math.min(d.generation, GEN_RADII.length - 1)] + 4))
       .attr("fill", "#e0e0e0")
       .attr("font-size", 10)
-      .text((d) => d.branchLabel);
+      .attr("display", showLabels ? null : "none")
+      .text((d) => {
+        const fp = d.fabriciusPerson;
+        const pp = d.partnerPerson;
+        if (!pp) return `${fp.firstName} ${fp.lastName}`;
+        return `${fp.firstName} ${fp.lastName} & ${pp.firstName} ${pp.lastName}`;
+      });
 
-    // Names + year below
-    nodeSel
+    // Birth year below
+    const sublabelsSel = nodeSel
       .append("text")
+      .attr("class", "node-sublabel")
       .attr("text-anchor", "middle")
       .attr("dy", (d) => GEN_RADII[Math.min(d.generation, GEN_RADII.length - 1)] + 13)
       .attr("fill", "#777")
       .attr("font-size", 8)
-      .text((d) => {
-        const name1 = d.fabriciusPerson.firstName;
-        const name2 = d.partnerPerson?.firstName;
-        const year = String(d.birthYear).slice(2);
-        return name2 ? `${name1} & ${name2} '${year}` : `${name1} '${year}`;
-      });
+      .attr("display", showLabels ? null : "none")
+      .text((d) => `'${String(d.birthYear).slice(2)}`);
+
+    labelSelRef.current = labelsSel;
+    sublabelSelRef.current = sublabelsSel;
 
     // Force simulation
     const simulation = d3
@@ -253,13 +293,19 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
 
     nodeSel.call(drag);
 
-    // Click on background to dismiss tooltip
-    sel.on("click", () => setTooltip(null));
+    sel.on("click", () => setEditNode(null));
 
     return () => {
       simulation.stop();
     };
-  }, [familyData, rootCoupleId, getLayout]);
+  }, [localData, rootCoupleId, getLayout, editMode]);
+
+  // Toggle label visibility without rebuilding
+  useEffect(() => {
+    const display = showLabels ? null : "none";
+    labelSelRef.current?.attr("display", display);
+    sublabelSelRef.current?.attr("display", display);
+  }, [showLabels]);
 
   // Re-target forces when layout mode changes (without rebuilding)
   useEffect(() => {
@@ -286,15 +332,83 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
     sim.alpha(0.8).restart();
   }, [layoutMode, getLayout]);
 
+  useEffect(() => {
+    graphRef.current = null;
+  }, [localData]);
+
+  const handleEditToggle = async () => {
+    if (editMode) {
+      setEditMode(false);
+      setEditNode(null);
+      return;
+    }
+    const stored = getStoredPassword();
+    if (stored) {
+      setPassword(stored);
+      setEditMode(true);
+    } else {
+      setShowPasswordModal(true);
+    }
+  };
+
+  const handlePasswordSubmit = async (pw: string) => {
+    const valid = await validatePassword(pw);
+    if (valid) {
+      storePassword(pw);
+      setPassword(pw);
+      setEditMode(true);
+      setShowPasswordModal(false);
+      setPasswordError(null);
+    } else {
+      setPasswordError("Wrong password");
+    }
+  };
+
+  const handleEditPerson = async (personId: string, fields: Record<string, string>) => {
+    if (!password) return;
+    const updated = applyEditPerson(localData, personId, fields);
+    setLocalData(updated);
+    setEditNode(null);
+    const res = await apiEditPerson(password, personId, fields);
+    if (res.ok) setSyncTimestamp(Date.now());
+  };
+
+  const handleAddChild = async (coupleId: string, child: { firstName: string; lastName: string; gender: "male" | "female" | "other"; dob: string }) => {
+    if (!password) return;
+    const updated = applyAddChild(localData, coupleId, child);
+    setLocalData(updated);
+    const res = await apiAddChild(password, coupleId, child);
+    if (res.ok) setSyncTimestamp(Date.now());
+  };
+
+  const handleAddCouple = async (personId: string, partner: { firstName: string; lastName: string; gender: "male" | "female" | "other"; dob: string }, relType: string) => {
+    if (!password) return;
+    const updated = applyAddCouple(localData, personId, partner, relType as "married" | "partnership" | "common-law");
+    setLocalData(updated);
+    const res = await apiAddCouple(password, personId, partner, relType);
+    if (res.ok) setSyncTimestamp(Date.now());
+  };
+
   return (
     <div className="relative w-full h-screen" style={{ background: "#0f1117" }}>
       {/* Title */}
       <div className="absolute top-5 left-5 z-10">
         <h1 className="text-lg font-semibold text-white">Fabricius Familiehjul</h1>
         <p className="text-sm text-gray-500">Drag nodes freely — use buttons to re-sort</p>
+        <button
+          onClick={handleEditToggle}
+          className={`mt-2 px-3 py-1.5 rounded-md text-xs border transition-colors ${
+            editMode
+              ? "bg-green-600 border-green-600 text-white"
+              : "bg-[#1e2030] border-[#2a2d3e] text-gray-400 hover:bg-[#2a2d3e] hover:text-white"
+          }`}
+        >
+          {editMode ? "Exit Edit Mode" : "Edit"}
+        </button>
+        <SyncBadge editTimestamp={syncTimestamp} siteId={import.meta.env.PUBLIC_NETLIFY_SITE_ID ?? ""} />
       </div>
 
-      {/* Layout mode buttons */}
+      {/* Layout mode buttons + label toggle */}
       <div className="absolute top-5 right-5 z-10 flex gap-2">
         {(["wheel", "birthOrder", "branchSize"] as const).map((mode) => (
           <button
@@ -309,6 +423,16 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
             {mode === "wheel" ? "Wheel" : mode === "birthOrder" ? "Birth Order" : "Branch Size"}
           </button>
         ))}
+        <button
+          onClick={() => setShowLabels((v) => !v)}
+          className={`px-3 py-1.5 rounded-md text-xs border transition-colors ${
+            showLabels
+              ? "bg-blue-600 border-blue-600 text-white"
+              : "bg-[#1e2030] border-[#2a2d3e] text-gray-400 hover:bg-[#2a2d3e] hover:text-white"
+          }`}
+        >
+          Labels
+        </button>
       </div>
 
       {/* Legend */}
@@ -331,26 +455,50 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
         style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" }}
       />
 
-      {/* Tooltip */}
-      {tooltip && (
+      {/* Hover tooltip at mouse */}
+      {hoveredNode && (
         <div
-          className="absolute z-20 bg-[#1e2030] border border-[#2a2d3e] rounded-lg p-3 text-sm shadow-lg"
-          style={{ left: tooltip.x + 20, top: tooltip.y - 20, minWidth: 180 }}
+          className="absolute z-20 bg-[#1e2030] border border-[#2a2d3e] rounded-lg p-3 text-sm shadow-lg pointer-events-none"
+          style={{ left: hoveredNode.mouseX + 16, top: hoveredNode.mouseY - 10, minWidth: 200 }}
         >
           <div className="text-white font-medium">
-            {tooltip.node.fabriciusPerson.firstName}
-            {tooltip.node.partnerPerson ? ` & ${tooltip.node.partnerPerson.firstName}` : ""}
-          </div>
-          <div className="text-gray-400 text-xs mt-1">
-            {tooltip.node.branchLabel} · Born {tooltip.node.birthYear}
-          </div>
-          <div className="text-gray-500 text-xs mt-1">
-            Generation {tooltip.node.generation}
-            {tooltip.node.childCount > 0
-              ? ` · ${tooltip.node.childCount} ${tooltip.node.childCount === 1 ? "child" : "children"}`
+            {hoveredNode.node.fabriciusPerson.firstName} {hoveredNode.node.fabriciusPerson.lastName}
+            {hoveredNode.node.partnerPerson
+              ? ` & ${hoveredNode.node.partnerPerson.firstName} ${hoveredNode.node.partnerPerson.lastName}`
               : ""}
           </div>
+          <div className="text-gray-400 text-xs mt-1">
+            Born {hoveredNode.node.birthYear}
+          </div>
+          <div className="text-gray-500 text-xs mt-1">
+            Generation {hoveredNode.node.generation}
+            {hoveredNode.node.childCount > 0
+              ? ` · ${hoveredNode.node.childCount} ${hoveredNode.node.childCount === 1 ? "child" : "children"}`
+              : ""}
+          </div>
+          {hoveredNode.node.isSingle && (
+            <div className="text-gray-500 text-xs mt-1">Single</div>
+          )}
         </div>
+      )}
+      {editMode && editNode && (
+        <EditPanel
+          node={editNode.node}
+          x={editNode.x}
+          y={editNode.y}
+          onEditPerson={handleEditPerson}
+          onAddChild={handleAddChild}
+          onAddCouple={handleAddCouple}
+          onClose={() => setEditNode(null)}
+        />
+      )}
+
+      {showPasswordModal && (
+        <PasswordModal
+          onSuccess={handlePasswordSubmit}
+          onCancel={() => setShowPasswordModal(false)}
+          error={passwordError}
+        />
       )}
     </div>
   );
