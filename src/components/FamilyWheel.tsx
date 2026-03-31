@@ -287,8 +287,6 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
       })
       .on("end", (event, d) => {
         if (!event.active) simulation.alphaTarget(0);
-        d.fx = null;
-        d.fy = null;
       });
 
     nodeSel.call(drag);
@@ -319,6 +317,12 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
     const cx = width / 2;
     const cy = height / 2;
     const positions = getLayout(graph.nodes, width, height);
+
+    // Unpin all nodes so they animate to new layout positions
+    for (const node of graph.nodes) {
+      node.fx = null;
+      node.fy = null;
+    }
 
     sim
       .force(
