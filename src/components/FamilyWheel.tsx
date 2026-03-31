@@ -27,6 +27,7 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
   const svgRef = useRef<SVGSVGElement>(null);
   const [layoutMode, setLayoutMode] = useState<LayoutMode>("wheel");
   const [showLabels, setShowLabels] = useState(true);
+  const [showRings, setShowRings] = useState(true);
   const [hoveredNode, setHoveredNode] = useState<{
     node: WheelNode;
     mouseX: number;
@@ -37,6 +38,7 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
   const zoomScaleRef = useRef(1);
   const labelSelRef = useRef<d3.Selection<SVGTextElement, WheelNode, SVGGElement, unknown> | null>(null);
   const sublabelSelRef = useRef<d3.Selection<SVGTextElement, WheelNode, SVGGElement, unknown> | null>(null);
+  const ringsGroupRef = useRef<d3.Selection<SVGGElement, unknown, null, undefined> | null>(null);
   const [editMode, setEditMode] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [passwordError, setPasswordError] = useState<string | null>(null);
@@ -118,7 +120,8 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
       decades.push(d);
     }
 
-    const ringsGroup = g.append("g").attr("class", "rings");
+    const ringsGroup = g.append("g").attr("class", "rings").attr("display", showRings ? null : "none");
+    ringsGroupRef.current = ringsGroup;
     for (const decade of decades) {
       const r = (decade - rootBirthYear) * scale;
       ringsGroup
@@ -305,6 +308,10 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
     sublabelSelRef.current?.attr("display", display);
   }, [showLabels]);
 
+  useEffect(() => {
+    ringsGroupRef.current?.attr("display", showRings ? null : "none");
+  }, [showRings]);
+
   // Re-target forces when layout mode changes (without rebuilding)
   useEffect(() => {
     const sim = simulationRef.current;
@@ -436,6 +443,16 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
           }`}
         >
           Navne
+        </button>
+        <button
+          onClick={() => setShowRings((v) => !v)}
+          className={`px-3 py-1.5 rounded-md text-xs border transition-colors ${
+            showRings
+              ? "bg-blue-600 border-blue-600 text-white"
+              : "bg-[#1e2030] border-[#2a2d3e] text-gray-400 hover:bg-[#2a2d3e] hover:text-white"
+          }`}
+        >
+          Rings
         </button>
       </div>
 
