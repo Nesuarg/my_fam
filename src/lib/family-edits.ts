@@ -8,7 +8,8 @@ interface NewPersonInput {
 }
 
 export function generatePersonId(firstName: string, data: FamilyData): string {
-  const base = firstName.toLowerCase().replace(/\s+/g, "-");
+  if (!firstName.trim()) throw new Error("First name is required");
+  const base = firstName.trim().toLowerCase().replace(/\s+/g, "-");
   const existingIds = new Set(data.people.map((p) => p.id));
   if (!existingIds.has(base)) return base;
   let suffix = 2;
@@ -20,10 +21,24 @@ function cloneData(data: FamilyData): FamilyData {
   return JSON.parse(JSON.stringify(data));
 }
 
+function parseDob(dob: string): number {
+  const match = dob.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (!match) throw new Error(`Invalid date format "${dob}" — expected M/D/YYYY`);
+  const year = parseInt(match[3], 10);
+  if (year < 1800 || year > new Date().getFullYear() + 1) {
+    throw new Error(`Birth year ${year} is out of range`);
+  }
+  return year;
+}
+
 function computeAge(dob: string): number {
-  const parts = dob.split("/");
-  const birthYear = parseInt(parts[2], 10);
-  return new Date().getFullYear() - birthYear;
+  return new Date().getFullYear() - parseDob(dob);
+}
+
+function validateNewPerson(input: NewPersonInput): void {
+  if (!input.firstName.trim()) throw new Error("First name is required");
+  if (!input.lastName.trim()) throw new Error("Last name is required");
+  parseDob(input.dob); // validates format and range
 }
 
 export function applyAddChild(
@@ -31,6 +46,7 @@ export function applyAddChild(
   coupleId: string,
   child: NewPersonInput,
 ): FamilyData {
+  validateNewPerson(child);
   const result = cloneData(data);
   const couple = result.couples.find((c) => c.id === coupleId);
   if (!couple) throw new Error(`Couple ${coupleId} not found`);
@@ -59,9 +75,16 @@ export function applyAddCouple(
   partner: NewPersonInput,
   relationshipType: "married" | "partnership" | "common-law",
 ): FamilyData {
+  validateNewPerson(partner);
   const result = cloneData(data);
   const person = result.people.find((p) => p.id === personId);
   if (!person) throw new Error(`Person ${personId} not found`);
+
+  // Check if person already has a couple
+  const existingCouple = result.couples.find(
+    (c) => c.person1Id === personId || c.person2Id === personId,
+  );
+  if (existingCouple) throw new Error(`Person ${personId} already has a partner`);
 
   const partnerId = generatePersonId(partner.firstName, result);
   const newPartner: SimplePerson = {
@@ -104,9 +127,16 @@ export function applyEditPerson(
   const person = result.people.find((p) => p.id === personId);
   if (!person) throw new Error(`Person ${personId} not found`);
 
-  if (fields.firstName !== undefined) person.firstName = fields.firstName;
-  if (fields.lastName !== undefined) person.lastName = fields.lastName;
+  if (fields.firstName !== undefined) {
+    if (!fields.firstName.trim()) throw new Error("First name cannot be empty");
+    person.firstName = fields.firstName;
+  }
+  if (fields.lastName !== undefined) {
+    if (!fields.lastName.trim()) throw new Error("Last name cannot be empty");
+    person.lastName = fields.lastName;
+  }
   if (fields.dob !== undefined) {
+    parseDob(fields.dob); // validate before applying
     person.dob = fields.dob;
     person.age = computeAge(fields.dob);
   }

@@ -37,6 +37,17 @@ describe("generatePersonId", () => {
     data.people.push({ id: "alice-2", firstName: "Alice", lastName: "X", age: 1, gender: "female", dob: "1/1/2020" });
     expect(generatePersonId("Alice", data)).toBe("alice-3");
   });
+
+  it("throws on empty name", () => {
+    const data = makeData();
+    expect(() => generatePersonId("", data)).toThrow("First name is required");
+    expect(() => generatePersonId("   ", data)).toThrow("First name is required");
+  });
+
+  it("trims whitespace", () => {
+    const data = makeData();
+    expect(generatePersonId("  Nanna  ", data)).toBe("nanna");
+  });
 });
 
 describe("applyAddChild", () => {
@@ -67,6 +78,34 @@ describe("applyAddChild", () => {
     expect(() =>
       applyAddChild(data, "nonexistent", { firstName: "X", lastName: "Y", gender: "male", dob: "1/1/2000" }),
     ).toThrow("Couple nonexistent not found");
+  });
+
+  it("throws on empty first name", () => {
+    const data = makeData();
+    expect(() =>
+      applyAddChild(data, "alice-bob", { firstName: "", lastName: "Smith", gender: "male", dob: "1/1/2000" }),
+    ).toThrow("First name is required");
+  });
+
+  it("throws on empty last name", () => {
+    const data = makeData();
+    expect(() =>
+      applyAddChild(data, "alice-bob", { firstName: "X", lastName: "  ", gender: "male", dob: "1/1/2000" }),
+    ).toThrow("Last name is required");
+  });
+
+  it("throws on invalid date format", () => {
+    const data = makeData();
+    expect(() =>
+      applyAddChild(data, "alice-bob", { firstName: "X", lastName: "Y", gender: "male", dob: "2000-01-15" }),
+    ).toThrow("Invalid date format");
+  });
+
+  it("throws on out-of-range birth year", () => {
+    const data = makeData();
+    expect(() =>
+      applyAddChild(data, "alice-bob", { firstName: "X", lastName: "Y", gender: "male", dob: "1/1/1700" }),
+    ).toThrow("out of range");
   });
 });
 
@@ -99,6 +138,14 @@ describe("applyAddCouple", () => {
       applyAddCouple(data, "nobody", { firstName: "X", lastName: "Y", gender: "female", dob: "1/1/2000" }, "married"),
     ).toThrow("Person nobody not found");
   });
+
+  it("throws if person already has a partner", () => {
+    const data = makeData();
+    // alice is already in couple alice-bob
+    expect(() =>
+      applyAddCouple(data, "alice", { firstName: "X", lastName: "Y", gender: "male", dob: "1/1/2000" }, "married"),
+    ).toThrow("already has a partner");
+  });
 });
 
 describe("applyEditPerson", () => {
@@ -129,5 +176,20 @@ describe("applyEditPerson", () => {
   it("throws if person not found", () => {
     const data = makeData();
     expect(() => applyEditPerson(data, "nobody", { firstName: "X" })).toThrow("Person nobody not found");
+  });
+
+  it("throws on empty first name", () => {
+    const data = makeData();
+    expect(() => applyEditPerson(data, "alice", { firstName: "" })).toThrow("First name cannot be empty");
+  });
+
+  it("throws on empty last name", () => {
+    const data = makeData();
+    expect(() => applyEditPerson(data, "alice", { lastName: "  " })).toThrow("Last name cannot be empty");
+  });
+
+  it("throws on invalid dob format", () => {
+    const data = makeData();
+    expect(() => applyEditPerson(data, "alice", { dob: "not-a-date" })).toThrow("Invalid date format");
   });
 });
