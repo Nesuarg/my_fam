@@ -53,7 +53,7 @@
 		{
 			"id": "mads",
 			"firstName": "Mads",
-			"lastName": "Petersen",
+			"lastName": "Fabricius Schmidt",
 			"age": 39,
 			"gender": "male",
 			"dob": "3/28/1985"
@@ -61,8 +61,7 @@
 		{
 			"id": "mette",
 			"firstName": "Mette",
-			"lastName": "Petersen",
-			"maidenName": "Hansen",
+			"lastName": "Bjerre",
 			"age": 39,
 			"gender": "female",
 			"dob": "3/28/1985"
@@ -341,7 +340,7 @@
 		{
 			"id": "iben",
 			"firstName": "Iben",
-			"lastName": "Petersen",
+			"lastName": "Fabricius Bjerre",
 			"age": 11,
 			"gender": "female",
 			"dob": "8/11/2013"
@@ -349,7 +348,7 @@
 		{
 			"id": "kirsten",
 			"firstName": "Kirsten",
-			"lastName": "Petersen",
+			"lastName": "Fabricius Bjerre",
 			"age": 8,
 			"gender": "female",
 			"dob": "3/30/2016"
@@ -365,7 +364,7 @@
 		{
 			"id": "carl",
 			"firstName": "Carl",
-			"lastName": "Hansen",
+			"lastName": "Schmidt",
 			"age": 66,
 			"gender": "male",
 			"dob": "7/23/1958"
