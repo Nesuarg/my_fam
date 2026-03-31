@@ -3,15 +3,15 @@ import type { FamilyData } from "@/types/simple-family";
 const STORAGE_KEY = "family-edit-password";
 
 export function getStoredPassword(): string | null {
-  return localStorage.getItem(STORAGE_KEY);
+  return sessionStorage.getItem(STORAGE_KEY);
 }
 
 export function storePassword(password: string): void {
-  localStorage.setItem(STORAGE_KEY, password);
+  sessionStorage.setItem(STORAGE_KEY, password);
 }
 
 export function clearPassword(): void {
-  localStorage.removeItem(STORAGE_KEY);
+  sessionStorage.removeItem(STORAGE_KEY);
 }
 
 interface ApiSuccess {

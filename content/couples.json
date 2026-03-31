@@ -572,7 +572,8 @@
 				},
 				{
 					"personId": "thomas",
-					"birthOrder": 4
+					"birthOrder": 4,
+					"ownFamilyId": "thomas-single"
 				},
 				{
 					"personId": "karen",

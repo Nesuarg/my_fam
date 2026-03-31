@@ -83,3 +83,6 @@ temp/
 
 # Local Netlify folder
 .netlify
+
+# Superpowers brainstorm artifacts
+.superpowers/
