@@ -1,16 +1,148 @@
-import type { Context } from "@netlify/functions";
-import type { FamilyData } from "../../src/types/simple-family";
-import { applyAddChild, applyAddCouple, applyEditPerson } from "../../src/lib/family-edits";
+// Self-contained Netlify Function — no cross-tree imports.
+// Edit logic is duplicated from src/lib/family-edits.ts to avoid bundling issues.
+
+interface SimplePerson {
+  id: string;
+  firstName: string;
+  lastName: string;
+  maidenName?: string;
+  age: number;
+  gender: "male" | "female" | "other";
+  dob: string;
+  notes?: string;
+}
+
+interface SimpleChild {
+  personId: string;
+  birthOrder: number;
+  ownFamilyId?: string;
+}
+
+interface SimpleCouple {
+  id: string;
+  person1Id: string;
+  person2Id: string | null;
+  relationshipType: "married" | "partnership" | "common-law" | "single";
+  children?: SimpleChild[];
+}
+
+interface FamilyData {
+  people: SimplePerson[];
+  couples: SimpleCouple[];
+}
+
+// --- Edit logic (mirrored from src/lib/family-edits.ts) ---
+
+function generatePersonId(firstName: string, data: FamilyData): string {
+  const base = firstName.toLowerCase().replace(/\s+/g, "-");
+  const existingIds = new Set(data.people.map((p) => p.id));
+  if (!existingIds.has(base)) return base;
+  let suffix = 2;
+  while (existingIds.has(`${base}-${suffix}`)) suffix++;
+  return `${base}-${suffix}`;
+}
+
+function computeAge(dob: string): number {
+  const parts = dob.split("/");
+  const birthYear = parseInt(parts[2], 10);
+  return new Date().getFullYear() - birthYear;
+}
+
+interface NewPersonInput {
+  firstName: string;
+  lastName: string;
+  gender: "male" | "female" | "other";
+  dob: string;
+}
+
+function applyAddChild(data: FamilyData, coupleId: string, child: NewPersonInput): FamilyData {
+  const result: FamilyData = JSON.parse(JSON.stringify(data));
+  const couple = result.couples.find((c) => c.id === coupleId);
+  if (!couple) throw new Error(`Couple ${coupleId} not found`);
+
+  const personId = generatePersonId(child.firstName, result);
+  result.people.push({
+    id: personId,
+    firstName: child.firstName,
+    lastName: child.lastName,
+    age: computeAge(child.dob),
+    gender: child.gender,
+    dob: child.dob,
+  });
+
+  if (!couple.children) couple.children = [];
+  const maxOrder = couple.children.reduce((max, ch) => Math.max(max, ch.birthOrder), 0);
+  couple.children.push({ personId, birthOrder: maxOrder + 1 });
+
+  return result;
+}
+
+function applyAddCouple(
+  data: FamilyData,
+  personId: string,
+  partner: NewPersonInput,
+  relationshipType: "married" | "partnership" | "common-law",
+): FamilyData {
+  const result: FamilyData = JSON.parse(JSON.stringify(data));
+  const person = result.people.find((p) => p.id === personId);
+  if (!person) throw new Error(`Person ${personId} not found`);
+
+  const partnerId = generatePersonId(partner.firstName, result);
+  result.people.push({
+    id: partnerId,
+    firstName: partner.firstName,
+    lastName: partner.lastName,
+    age: computeAge(partner.dob),
+    gender: partner.gender,
+    dob: partner.dob,
+  });
+
+  const coupleId = `${personId}-${partnerId}`;
+  result.couples.push({
+    id: coupleId,
+    person1Id: personId,
+    person2Id: partnerId,
+    relationshipType,
+  });
+
+  for (const couple of result.couples) {
+    if (couple.children) {
+      const childRef = couple.children.find((ch) => ch.personId === personId);
+      if (childRef && !childRef.ownFamilyId) {
+        childRef.ownFamilyId = coupleId;
+        break;
+      }
+    }
+  }
+
+  return result;
+}
+
+function applyEditPerson(
+  data: FamilyData,
+  personId: string,
+  fields: Partial<Pick<SimplePerson, "firstName" | "lastName" | "dob" | "gender">>,
+): FamilyData {
+  const result: FamilyData = JSON.parse(JSON.stringify(data));
+  const person = result.people.find((p) => p.id === personId);
+  if (!person) throw new Error(`Person ${personId} not found`);
+
+  if (fields.firstName !== undefined) person.firstName = fields.firstName;
+  if (fields.lastName !== undefined) person.lastName = fields.lastName;
+  if (fields.dob !== undefined) {
+    person.dob = fields.dob;
+    person.age = computeAge(fields.dob);
+  }
+  if (fields.gender !== undefined) person.gender = fields.gender;
+
+  return result;
+}
+
+// --- GitHub API ---
 
 const REPO = "Nesuarg/my_fam";
 const FILE_PATH = "content/couples.json";
 const BRANCH = "master";
-
-interface GitHubFileResponse {
-  content: string;
-  sha: string;
-  encoding: string;
-}
 
 async function fetchFileFromGitHub(token: string): Promise<{ data: FamilyData; sha: string }> {
   const res = await fetch(`https://api.github.com/repos/${REPO}/contents/${FILE_PATH}?ref=${BRANCH}`, {
@@ -21,7 +153,7 @@ async function fetchFileFromGitHub(token: string): Promise<{ data: FamilyData; s
   });
   if (!res.ok) throw new Error(`GitHub fetch failed: ${res.status} ${await res.text()}`);
 
-  const file: GitHubFileResponse = await res.json();
+  const file = await res.json();
   const decoded = Buffer.from(file.content, "base64").toString("utf-8");
   return { data: JSON.parse(decoded), sha: file.sha };
 }
@@ -40,12 +172,7 @@ async function commitFileToGitHub(
       Accept: "application/vnd.github.v3+json",
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({
-      message,
-      content,
-      sha,
-      branch: BRANCH,
-    }),
+    body: JSON.stringify({ message, content, sha, branch: BRANCH }),
   });
   if (!res.ok) {
     const status = res.status;
@@ -57,13 +184,15 @@ async function commitFileToGitHub(
   return result.commit.sha;
 }
 
+// --- Request handler ---
+
 function applyEdit(data: FamilyData, body: Record<string, unknown>): { data: FamilyData; message: string } {
   const action = body.action as string;
 
   switch (action) {
     case "addChild": {
       const coupleId = body.coupleId as string;
-      const child = body.child as { firstName: string; lastName: string; gender: "male" | "female" | "other"; dob: string };
+      const child = body.child as NewPersonInput;
       return {
         data: applyAddChild(data, coupleId, child),
         message: `Add child ${child.firstName} ${child.lastName} to ${coupleId}`,
@@ -71,7 +200,7 @@ function applyEdit(data: FamilyData, body: Record<string, unknown>): { data: Fam
     }
     case "addCouple": {
       const personId = body.personId as string;
-      const partner = body.partner as { firstName: string; lastName: string; gender: "male" | "female" | "other"; dob: string };
+      const partner = body.partner as NewPersonInput;
       const relationshipType = (body.relationshipType as "married" | "partnership" | "common-law") ?? "married";
       return {
         data: applyAddCouple(data, personId, partner, relationshipType),
@@ -91,7 +220,7 @@ function applyEdit(data: FamilyData, body: Record<string, unknown>): { data: Fam
   }
 }
 
-export default async function handler(req: Request, _context: Context) {
+export default async function handler(req: Request) {
   if (req.method === "OPTIONS") {
     return new Response(null, {
       status: 204,
@@ -134,3 +263,7 @@ export default async function handler(req: Request, _context: Context) {
 
   return Response.json({ ok: false, error: "conflict", message: "Conflict after retry. Please refresh and try again." }, { status: 409 });
 }
+
+export const config = {
+  path: "/.netlify/functions/edit-family",
+};
