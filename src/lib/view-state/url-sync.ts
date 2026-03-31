@@ -31,15 +31,10 @@ export async function readStateFromURL(): Promise<ViewState | null> {
   return fromCompact(compact);
 }
 
-let debounceTimer: ReturnType<typeof setTimeout> | null = null;
-
-/** Encode view state and write it to the URL bar via replaceState. Debounced at 500ms. */
-export function writeStateToURL(state: ViewState): void {
-  if (debounceTimer) clearTimeout(debounceTimer);
-  debounceTimer = setTimeout(async () => {
-    const encoded = await compress(toCompact(state));
-    const url = new URL(window.location.href);
-    url.searchParams.set(URL_PARAM, encoded);
-    window.history.replaceState(null, "", url.toString());
-  }, 500);
+/** Encode view state and write it to the URL bar via replaceState. */
+export async function writeStateToURL(state: ViewState): Promise<void> {
+  const encoded = await compress(toCompact(state));
+  const url = new URL(window.location.href);
+  url.searchParams.set(URL_PARAM, encoded);
+  window.history.replaceState(null, "", url.toString());
 }

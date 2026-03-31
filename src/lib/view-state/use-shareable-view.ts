@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import type { ViewState, ViewStateConfig } from "./types";
-import { computeDiffs, applyDiffs } from "./diff";
+import { computeDiffs } from "./diff";
 import { compress } from "./codec";
 import { readStateFromURL, writeStateToURL, toCompact } from "./url-sync";
 
@@ -8,32 +8,24 @@ export function useShareableView<S extends Record<string, string | number | bool
   config: ViewStateConfig<S>,
 ): {
   copyShareLink: () => Promise<void>;
-  isRestored: boolean;
+  restoredState: ViewState | null;
   updateURL: () => void;
 } {
-  const [isRestored, setIsRestored] = useState(false);
+  const [restoredState, setRestoredState] = useState<ViewState | null>(null);
   const configRef = useRef(config);
   configRef.current = config;
 
-  // On mount: check for ?v= param and restore
+  // On mount: decode URL state and store it — consumers apply it when ready
   useEffect(() => {
     let cancelled = false;
     readStateFromURL().then((state) => {
       if (cancelled || !state) return;
-      const cfg = configRef.current;
-      cfg.applySettings(state.settings as S);
-      cfg.applyCamera(state.camera);
-
-      const baseline = cfg.baseline();
-      const width = window.innerWidth;
-      const height = window.innerHeight;
-      const positions = applyDiffs(baseline, state.diffs, width, height);
-      cfg.applyPositions(positions);
-
-      setIsRestored(true);
+      setRestoredState(state);
     });
     return () => { cancelled = true; };
   }, []);
+
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const buildState = useCallback((): ViewState => {
     const cfg = configRef.current;
@@ -51,7 +43,10 @@ export function useShareableView<S extends Record<string, string | number | bool
   }, []);
 
   const updateURL = useCallback(() => {
-    writeStateToURL(buildState());
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      writeStateToURL(buildState());
+    }, 500);
   }, [buildState]);
 
   const copyShareLink = useCallback(async () => {
@@ -62,5 +57,5 @@ export function useShareableView<S extends Record<string, string | number | bool
     await navigator.clipboard.writeText(url.toString());
   }, [buildState]);
 
-  return { copyShareLink, isRestored, updateURL };
+  return { copyShareLink, restoredState, updateURL };
 }

@@ -1,7 +1,10 @@
 import type { CompactState } from "./types";
 
 function toBase64Url(bytes: Uint8Array): string {
-  const binary = String.fromCharCode(...bytes);
+  let binary = "";
+  for (let i = 0; i < bytes.length; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
   return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 }
 
@@ -14,7 +17,7 @@ function fromBase64Url(str: string): Uint8Array {
 async function gzip(data: Uint8Array): Promise<Uint8Array> {
   const cs = new CompressionStream("gzip");
   const writer = cs.writable.getWriter();
-  writer.write(data);
+  writer.write(new Uint8Array(data));
   writer.close();
   const chunks: Uint8Array[] = [];
   const reader = cs.readable.getReader();
@@ -36,7 +39,7 @@ async function gzip(data: Uint8Array): Promise<Uint8Array> {
 async function gunzip(data: Uint8Array): Promise<Uint8Array> {
   const ds = new DecompressionStream("gzip");
   const writer = ds.writable.getWriter();
-  writer.write(data);
+  writer.write(new Uint8Array(data));
   writer.close();
   const chunks: Uint8Array[] = [];
   const reader = ds.readable.getReader();

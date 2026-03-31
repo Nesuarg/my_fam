@@ -1,5 +1,4 @@
 import type { WheelNode } from "./wheel-graph";
-import { REF_WIDTH, REF_HEIGHT } from "./view-state/diff";
 
 export interface Position {
   x: number;
@@ -143,28 +142,29 @@ export function computeBranchSizeLayout(
 }
 
 /**
- * Compute layout positions at the reference viewport (1024x768),
- * centered at (REF_WIDTH/2, REF_HEIGHT/2).
+ * Compute layout positions at the given viewport size, centered at (width/2, height/2).
  */
 export function computeBaselinePositions(
   nodes: WheelNode[],
   layoutMode: "wheel" | "birthOrder" | "branchSize",
+  width: number,
+  height: number,
 ): Map<string, { x: number; y: number }> {
   const rootBirthYear = nodes.find((n) => n.generation === 0)?.birthYear ?? 1919;
   let positions: Map<string, { x: number; y: number }>;
   switch (layoutMode) {
     case "birthOrder":
-      positions = computeBirthOrderLayout(nodes, rootBirthYear, REF_WIDTH, REF_HEIGHT);
+      positions = computeBirthOrderLayout(nodes, rootBirthYear, width, height);
       break;
     case "branchSize":
-      positions = computeBranchSizeLayout(nodes, rootBirthYear, REF_WIDTH, REF_HEIGHT);
+      positions = computeBranchSizeLayout(nodes, rootBirthYear, width, height);
       break;
     default:
-      positions = computeWheelLayout(nodes, rootBirthYear, REF_WIDTH, REF_HEIGHT);
+      positions = computeWheelLayout(nodes, rootBirthYear, width, height);
   }
   // Shift from center-origin to absolute viewport coords
-  const cx = REF_WIDTH / 2;
-  const cy = REF_HEIGHT / 2;
+  const cx = width / 2;
+  const cy = height / 2;
   const result = new Map<string, { x: number; y: number }>();
   for (const [id, pos] of positions) {
     result.set(id, { x: pos.x + cx, y: pos.y + cy });

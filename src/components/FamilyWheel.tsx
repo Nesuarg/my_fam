@@ -10,6 +10,7 @@ import {
 } from "@/lib/wheel-layouts";
 import { useShareableView } from "@/lib/view-state";
 import type { ViewStateConfig } from "@/lib/view-state";
+import { applyDiffs } from "@/lib/view-state/diff";
 import { applyAddChild, applyAddCouple, applyEditPerson } from "@/lib/family-edits";
 import { getStoredPassword, storePassword, addChild as apiAddChild, addCouple as apiAddCouple, editPerson as apiEditPerson, validatePassword } from "@/lib/family-api";
 import PasswordModal from "./PasswordModal";
@@ -71,7 +72,10 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
     baseline: () => {
       const graph = graphRef.current;
       if (!graph) return new Map();
-      return computeBaselinePositions(graph.nodes, layoutMode);
+      const svg = svgRef.current;
+      const w = svg?.clientWidth ?? window.innerWidth;
+      const h = svg?.clientHeight ?? window.innerHeight;
+      return computeBaselinePositions(graph.nodes, layoutMode, w, h);
     },
     positions: () => {
       const graph = graphRef.current;
@@ -109,7 +113,7 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
     },
   };
 
-  const { copyShareLink, isRestored, updateURL } = useShareableView(viewStateConfig);
+  const { copyShareLink, restoredState, updateURL } = useShareableView(viewStateConfig);
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
@@ -130,12 +134,31 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
     // Compute target positions
     const positions = getLayout(nodes, width, height);
 
-    // Set initial positions if not yet set
-    for (const node of nodes) {
-      const pos = positions.get(node.coupleId);
-      if (pos && node.x === undefined) {
-        node.x = pos.x + cx;
-        node.y = pos.y + cy;
+    // If restoring from URL, apply settings and pin nodes to restored positions
+    if (restoredState) {
+      viewStateConfig.applySettings(restoredState.settings as { layout: string; labels: boolean; rings: boolean });
+      zoomTransformRef.current = restoredState.camera;
+
+      const restoredLayout = (restoredState.settings.layout as LayoutMode) ?? layoutMode;
+      const baseline = computeBaselinePositions(nodes, restoredLayout, width, height);
+      const restored = applyDiffs(baseline, restoredState.diffs, width, height);
+      for (const node of nodes) {
+        const pos = restored.get(node.coupleId);
+        if (pos) {
+          node.x = pos.x;
+          node.y = pos.y;
+          node.fx = pos.x;
+          node.fy = pos.y;
+        }
+      }
+    } else {
+      // Set initial positions if not yet set
+      for (const node of nodes) {
+        const pos = positions.get(node.coupleId);
+        if (pos && node.x === undefined) {
+          node.x = pos.x + cx;
+          node.y = pos.y + cy;
+        }
       }
     }
 
@@ -160,7 +183,7 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
     sel.call(zoom);
 
     // If restoring from shared URL, apply the saved camera transform
-    if (isRestored) {
+    if (restoredState) {
       const cam = zoomTransformRef.current;
       const initialTransform = d3.zoomIdentity.translate(cam.x, cam.y).scale(cam.k);
       sel.call(zoom.transform, initialTransform);
@@ -333,8 +356,8 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
         nodeSel.attr("transform", (d) => `translate(${d.x ?? 0},${d.y ?? 0})`);
       });
 
-    // If restoring from shared URL, freeze the simulation — nodes are already pinned via applyPositions
-    if (isRestored) {
+    // If restoring from shared URL, freeze the simulation — nodes are already pinned
+    if (restoredState) {
       simulation.alpha(0);
     }
 
@@ -364,7 +387,7 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
     return () => {
       simulation.stop();
     };
-  }, [localData, rootCoupleId, getLayout, editMode]);
+  }, [localData, rootCoupleId, getLayout, editMode, restoredState]);
 
   // Toggle label visibility without rebuilding
   useEffect(() => {
