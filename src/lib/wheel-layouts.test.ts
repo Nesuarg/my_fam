@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { computeWheelLayout, computeBirthOrderLayout, computeBranchSizeLayout } from "./wheel-layouts";
+import { computeWheelLayout, computeBirthOrderLayout, computeBranchSizeLayout, computeTreeLayout } from "./wheel-layouts";
 import type { WheelNode } from "./wheel-graph";
 
 function makeNode(overrides: Partial<WheelNode>): WheelNode {
@@ -85,5 +85,56 @@ describe("computeBranchSizeLayout", () => {
     });
     const gcSpan = Math.max(...gcAngles) - Math.min(...gcAngles);
     expect(gcSpan).toBeGreaterThan(0);
+  });
+});
+
+describe("computeTreeLayout", () => {
+  it("places root node at top center", () => {
+    const nodes = [makeNode({ coupleId: "root", generation: 0, birthYear: 1919 })];
+    const positions = computeTreeLayout(nodes, 1919, 800, 800);
+    const root = positions.get("root")!;
+    expect(root.x).toBeCloseTo(0, 0);
+    expect(root.y).toBeLessThan(0);
+  });
+
+  it("places children below parent", () => {
+    const root = makeNode({ coupleId: "root", generation: 0, birthYear: 1919, childCount: 2 });
+    const child1 = makeNode({ coupleId: "c1", generation: 1, birthYear: 1945, birthOrder: 1, parentCoupleId: "root" });
+    const child2 = makeNode({ coupleId: "c2", generation: 1, birthYear: 1950, birthOrder: 2, parentCoupleId: "root" });
+    const positions = computeTreeLayout([root, child1, child2], 1919, 800, 800);
+
+    const rootPos = positions.get("root")!;
+    const c1Pos = positions.get("c1")!;
+    const c2Pos = positions.get("c2")!;
+
+    expect(c1Pos.y).toBeGreaterThan(rootPos.y);
+    expect(c2Pos.y).toBeGreaterThan(rootPos.y);
+  });
+
+  it("places siblings side by side horizontally", () => {
+    const root = makeNode({ coupleId: "root", generation: 0, birthYear: 1919, childCount: 2 });
+    const child1 = makeNode({ coupleId: "c1", generation: 1, birthYear: 1945, birthOrder: 1, parentCoupleId: "root" });
+    const child2 = makeNode({ coupleId: "c2", generation: 1, birthYear: 1950, birthOrder: 2, parentCoupleId: "root" });
+    const positions = computeTreeLayout([root, child1, child2], 1919, 800, 800);
+
+    const c1Pos = positions.get("c1")!;
+    const c2Pos = positions.get("c2")!;
+
+    expect(c1Pos.y).toBeCloseTo(c2Pos.y, 0);
+    expect(c1Pos.x).not.toBeCloseTo(c2Pos.x, 0);
+  });
+
+  it("places grandchildren below their parents", () => {
+    const root = makeNode({ coupleId: "root", generation: 0, birthYear: 1919, childCount: 1 });
+    const c1 = makeNode({ coupleId: "c1", generation: 1, birthYear: 1945, birthOrder: 1, parentCoupleId: "root", childCount: 1 });
+    const gc = makeNode({ coupleId: "gc1", generation: 2, birthYear: 1970, birthOrder: 1, parentCoupleId: "c1" });
+    const positions = computeTreeLayout([root, c1, gc], 1919, 800, 800);
+
+    const rootPos = positions.get("root")!;
+    const c1Pos = positions.get("c1")!;
+    const gcPos = positions.get("gc1")!;
+
+    expect(c1Pos.y).toBeGreaterThan(rootPos.y);
+    expect(gcPos.y).toBeGreaterThan(c1Pos.y);
   });
 });
