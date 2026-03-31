@@ -63,13 +63,13 @@ export default function SyncBadge({ editTimestamp, siteId }: Props) {
       {state === "syncing" && (
         <>
           <div className="w-2 h-2 rounded-full bg-yellow-400 animate-pulse" />
-          <span className="text-yellow-400">Syncing...</span>
+          <span className="text-yellow-400">Synkroniserer...</span>
         </>
       )}
       {state === "done" && (
         <>
           <div className="w-2 h-2 rounded-full bg-green-400" />
-          <span className="text-green-400">Updated!</span>
+          <span className="text-green-400">Opdateret!</span>
         </>
       )}
     </div>
