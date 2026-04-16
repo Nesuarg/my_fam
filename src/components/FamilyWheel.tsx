@@ -405,7 +405,7 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
       {/* Title */}
       <div className="absolute top-5 left-5 z-10">
         <h1 className="text-lg font-semibold text-white">Fabricius Familiehjul</h1>
-        <p className="text-sm text-gray-500">Drag nodes freely — use buttons to re-sort</p>
+        <p className="text-sm text-gray-500">Tryk og flyt frit — brug knapperne til at sortere</p>
         <button
           onClick={handleEditToggle}
           className={`mt-2 px-3 py-1.5 rounded-md text-xs border transition-colors ${
@@ -414,7 +414,7 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
               : "bg-[#1e2030] border-[#2a2d3e] text-gray-400 hover:bg-[#2a2d3e] hover:text-white"
           }`}
         >
-          {editMode ? "Exit Edit Mode" : "Edit"}
+          {editMode ? "Afslut redigering" : "Rediger"}
         </button>
         <SyncBadge editTimestamp={syncTimestamp} siteId={import.meta.env.PUBLIC_NETLIFY_SITE_ID ?? ""} />
       </div>
@@ -431,7 +431,7 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
                 : "bg-[#1e2030] border-[#2a2d3e] text-gray-400 hover:bg-[#2a2d3e] hover:text-white"
             }`}
           >
-            {mode === "wheel" ? "Wheel" : mode === "birthOrder" ? "Birth Order" : "Branch Size"}
+            {mode === "wheel" ? "Hjul" : mode === "birthOrder" ? "Fodselsdato" : "Grenstorrelse"}
           </button>
         ))}
         <button
@@ -442,7 +442,7 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
               : "bg-[#1e2030] border-[#2a2d3e] text-gray-400 hover:bg-[#2a2d3e] hover:text-white"
           }`}
         >
-          Labels
+          Navne
         </button>
         <button
           onClick={() => setShowRings((v) => !v)}
@@ -458,7 +458,7 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
 
       {/* Legend */}
       <div className="absolute bottom-5 left-5 z-10 flex gap-4 text-sm">
-        {["Gen 0 (root)", "Gen 1", "Gen 2", "Gen 3+"].map((label, i) => (
+        {["Stampar", "Born", "Borneborn", "Oldeborn+"].map((label, i) => (
           <div key={label} className="flex items-center gap-1.5">
             <div
               className="w-2.5 h-2.5 rounded-full"
@@ -489,16 +489,16 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
               : ""}
           </div>
           <div className="text-gray-400 text-xs mt-1">
-            Born {hoveredNode.node.birthYear}
+            Fodt {hoveredNode.node.birthYear}
           </div>
           <div className="text-gray-500 text-xs mt-1">
             Generation {hoveredNode.node.generation}
             {hoveredNode.node.childCount > 0
-              ? ` · ${hoveredNode.node.childCount} ${hoveredNode.node.childCount === 1 ? "child" : "children"}`
+              ? ` · ${hoveredNode.node.childCount} ${hoveredNode.node.childCount === 1 ? "barn" : "born"}`
               : ""}
           </div>
           {hoveredNode.node.isSingle && (
-            <div className="text-gray-500 text-xs mt-1">Single</div>
+            <div className="text-gray-500 text-xs mt-1">Enlig</div>
           )}
         </div>
       )}

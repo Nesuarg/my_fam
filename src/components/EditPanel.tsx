@@ -34,12 +34,12 @@ function PersonFields({
   return (
     <div className="mb-3">
       <div className="text-gray-500 text-xs mb-1">{label}</div>
-      <input value={fn} onChange={(e) => setFn(e.target.value)} placeholder="First name" className="w-full px-2 py-1 mb-1 bg-[#0f1117] border border-[#2a2d3e] rounded text-white text-xs focus:outline-none focus:border-blue-500" />
-      <input value={ln} onChange={(e) => setLn(e.target.value)} placeholder="Last name" className="w-full px-2 py-1 mb-1 bg-[#0f1117] border border-[#2a2d3e] rounded text-white text-xs focus:outline-none focus:border-blue-500" />
-      <input value={d} onChange={(e) => setD(e.target.value)} placeholder="Birth date (M/D/YYYY)" className="w-full px-2 py-1 bg-[#0f1117] border border-[#2a2d3e] rounded text-white text-xs focus:outline-none focus:border-blue-500" />
+      <input value={fn} onChange={(e) => setFn(e.target.value)} placeholder="Fornavn" className="w-full px-2 py-1 mb-1 bg-[#0f1117] border border-[#2a2d3e] rounded text-white text-xs focus:outline-none focus:border-blue-500" />
+      <input value={ln} onChange={(e) => setLn(e.target.value)} placeholder="Efternavn" className="w-full px-2 py-1 mb-1 bg-[#0f1117] border border-[#2a2d3e] rounded text-white text-xs focus:outline-none focus:border-blue-500" />
+      <input value={d} onChange={(e) => setD(e.target.value)} placeholder="Fodselsdato (M/D/ÅÅÅÅ)" className="w-full px-2 py-1 bg-[#0f1117] border border-[#2a2d3e] rounded text-white text-xs focus:outline-none focus:border-blue-500" />
       {changed && (
         <button onClick={() => onSave({ firstName: fn, lastName: ln, dob: d })} className="mt-1 px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700">
-          Save
+          Gem
         </button>
       )}
     </div>
@@ -63,18 +63,18 @@ function NewPersonForm({
 
   return (
     <div className="mt-2 border-t border-[#2a2d3e] pt-2">
-      <input value={fn} onChange={(e) => setFn(e.target.value)} placeholder="First name" autoFocus className="w-full px-2 py-1 mb-1 bg-[#0f1117] border border-[#2a2d3e] rounded text-white text-xs focus:outline-none focus:border-blue-500" />
-      <input value={ln} onChange={(e) => setLn(e.target.value)} placeholder="Last name" className="w-full px-2 py-1 mb-1 bg-[#0f1117] border border-[#2a2d3e] rounded text-white text-xs focus:outline-none focus:border-blue-500" />
-      <input value={dob} onChange={(e) => setDob(e.target.value)} placeholder="Birth date (M/D/YYYY)" className="w-full px-2 py-1 mb-1 bg-[#0f1117] border border-[#2a2d3e] rounded text-white text-xs focus:outline-none focus:border-blue-500" />
+      <input value={fn} onChange={(e) => setFn(e.target.value)} placeholder="Fornavn" autoFocus className="w-full px-2 py-1 mb-1 bg-[#0f1117] border border-[#2a2d3e] rounded text-white text-xs focus:outline-none focus:border-blue-500" />
+      <input value={ln} onChange={(e) => setLn(e.target.value)} placeholder="Efternavn" className="w-full px-2 py-1 mb-1 bg-[#0f1117] border border-[#2a2d3e] rounded text-white text-xs focus:outline-none focus:border-blue-500" />
+      <input value={dob} onChange={(e) => setDob(e.target.value)} placeholder="Fodselsdato (M/D/ÅÅÅÅ)" className="w-full px-2 py-1 mb-1 bg-[#0f1117] border border-[#2a2d3e] rounded text-white text-xs focus:outline-none focus:border-blue-500" />
       <div className="flex gap-2 mb-1">
         <button onClick={() => setGender("male")} className={`px-2 py-1 text-xs rounded ${gender === "male" ? "bg-blue-600 text-white" : "bg-[#2a2d3e] text-gray-400"}`}>M</button>
         <button onClick={() => setGender("female")} className={`px-2 py-1 text-xs rounded ${gender === "female" ? "bg-pink-600 text-white" : "bg-[#2a2d3e] text-gray-400"}`}>F</button>
       </div>
       {showRelType && (
         <select value={relType} onChange={(e) => setRelType(e.target.value)} className="w-full px-2 py-1 mb-1 bg-[#0f1117] border border-[#2a2d3e] rounded text-white text-xs">
-          <option value="married">Married</option>
-          <option value="partnership">Partnership</option>
-          <option value="common-law">Common-law</option>
+          <option value="married">Gift</option>
+          <option value="partnership">Partnerskab</option>
+          <option value="common-law">Samlevende</option>
         </select>
       )}
       <div className="flex gap-2 mt-1">
@@ -83,9 +83,9 @@ function NewPersonForm({
           disabled={!fn || !ln || !dob}
           className="px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
         >
-          Save
+          Gem
         </button>
-        <button onClick={onCancel} className="px-2 py-1 text-xs bg-[#2a2d3e] text-gray-400 rounded hover:text-white">Cancel</button>
+        <button onClick={onCancel} className="px-2 py-1 text-xs bg-[#2a2d3e] text-gray-400 rounded hover:text-white">Annuller</button>
       </div>
     </div>
   );
@@ -101,7 +101,7 @@ export default function EditPanel({ node, x, y, onEditPerson, onAddChild, onAddC
       onClick={(e) => e.stopPropagation()}
     >
       <div className="flex justify-between items-center mb-2">
-        <span className="text-white text-sm font-medium">Edit</span>
+        <span className="text-white text-sm font-medium">Rediger</span>
         <button onClick={onClose} className="text-gray-500 hover:text-white text-xs">X</button>
       </div>
 
@@ -125,7 +125,7 @@ export default function EditPanel({ node, x, y, onEditPerson, onAddChild, onAddC
           )}
           <div className="flex gap-2 mt-2 border-t border-[#2a2d3e] pt-2">
             {!node.isSingle && (
-              <button onClick={() => setView("addChild")} className="px-2 py-1 text-xs bg-[#2a2d3e] text-gray-300 rounded hover:text-white">+ Child</button>
+              <button onClick={() => setView("addChild")} className="px-2 py-1 text-xs bg-[#2a2d3e] text-gray-300 rounded hover:text-white">+ Barn</button>
             )}
             {node.isSingle && !node.partnerPerson && (
               <button onClick={() => setView("addPartner")} className="px-2 py-1 text-xs bg-[#2a2d3e] text-gray-300 rounded hover:text-white">+ Partner</button>
@@ -136,7 +136,7 @@ export default function EditPanel({ node, x, y, onEditPerson, onAddChild, onAddC
 
       {view === "addChild" && (
         <>
-          <div className="text-gray-400 text-xs mb-1">Add child</div>
+          <div className="text-gray-400 text-xs mb-1">Tilføj barn</div>
           <NewPersonForm
             onSave={(child) => { onAddChild(node.coupleId, child); onClose(); }}
             onCancel={() => setView("details")}
@@ -146,7 +146,7 @@ export default function EditPanel({ node, x, y, onEditPerson, onAddChild, onAddC
 
       {view === "addPartner" && (
         <>
-          <div className="text-gray-400 text-xs mb-1">Add partner for {node.fabriciusPerson.firstName}</div>
+          <div className="text-gray-400 text-xs mb-1">Tilføj partner for {node.fabriciusPerson.firstName}</div>
           <NewPersonForm
             showRelType
             onSave={(partner, relType) => { onAddCouple(node.fabriciusPerson.id, partner, relType ?? "married"); onClose(); }}
