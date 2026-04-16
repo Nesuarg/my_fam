@@ -140,3 +140,34 @@ export function computeBranchSizeLayout(
 
   return positions;
 }
+
+/**
+ * Compute layout positions at the given viewport size, centered at (width/2, height/2).
+ */
+export function computeBaselinePositions(
+  nodes: WheelNode[],
+  layoutMode: "wheel" | "birthOrder" | "branchSize",
+  width: number,
+  height: number,
+): Map<string, { x: number; y: number }> {
+  const rootBirthYear = nodes.find((n) => n.generation === 0)?.birthYear ?? 1919;
+  let positions: Map<string, { x: number; y: number }>;
+  switch (layoutMode) {
+    case "birthOrder":
+      positions = computeBirthOrderLayout(nodes, rootBirthYear, width, height);
+      break;
+    case "branchSize":
+      positions = computeBranchSizeLayout(nodes, rootBirthYear, width, height);
+      break;
+    default:
+      positions = computeWheelLayout(nodes, rootBirthYear, width, height);
+  }
+  // Shift from center-origin to absolute viewport coords
+  const cx = width / 2;
+  const cy = height / 2;
+  const result = new Map<string, { x: number; y: number }>();
+  for (const [id, pos] of positions) {
+    result.set(id, { x: pos.x + cx, y: pos.y + cy });
+  }
+  return result;
+}

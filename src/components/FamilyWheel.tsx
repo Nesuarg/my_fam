@@ -6,7 +6,11 @@ import {
   computeWheelLayout,
   computeBirthOrderLayout,
   computeBranchSizeLayout,
+  computeBaselinePositions,
 } from "@/lib/wheel-layouts";
+import { useShareableView } from "@/lib/view-state";
+import type { ViewStateConfig } from "@/lib/view-state";
+import { applyDiffs } from "@/lib/view-state/diff";
 import { applyAddChild, applyAddCouple, applyEditPerson } from "@/lib/family-edits";
 import { getStoredPassword, storePassword, addChild as apiAddChild, addCouple as apiAddCouple, editPerson as apiEditPerson, validatePassword } from "@/lib/family-api";
 import PasswordModal from "./PasswordModal";
@@ -27,6 +31,7 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
   const svgRef = useRef<SVGSVGElement>(null);
   const [layoutMode, setLayoutMode] = useState<LayoutMode>("wheel");
   const [showLabels, setShowLabels] = useState(true);
+  const [showRings, setShowRings] = useState(true);
   const [hoveredNode, setHoveredNode] = useState<{
     node: WheelNode;
     mouseX: number;
@@ -37,6 +42,7 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
   const zoomScaleRef = useRef(1);
   const labelSelRef = useRef<d3.Selection<SVGTextElement, WheelNode, SVGGElement, unknown> | null>(null);
   const sublabelSelRef = useRef<d3.Selection<SVGTextElement, WheelNode, SVGGElement, unknown> | null>(null);
+  const ringsGroupRef = useRef<d3.Selection<SVGGElement, unknown, null, undefined> | null>(null);
   const [editMode, setEditMode] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [passwordError, setPasswordError] = useState<string | null>(null);
@@ -60,6 +66,56 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
     [layoutMode],
   );
 
+  const zoomTransformRef = useRef<{ k: number; x: number; y: number }>({ k: 1, x: 0, y: 0 });
+
+  const viewStateConfig: ViewStateConfig<{ layout: string; labels: boolean; rings: boolean }> = {
+    baseline: () => {
+      const graph = graphRef.current;
+      if (!graph) return new Map();
+      const svg = svgRef.current;
+      const w = svg?.clientWidth ?? window.innerWidth;
+      const h = svg?.clientHeight ?? window.innerHeight;
+      return computeBaselinePositions(graph.nodes, layoutMode, w, h);
+    },
+    positions: () => {
+      const graph = graphRef.current;
+      if (!graph) return new Map();
+      const positions = new Map<string, { x: number; y: number }>();
+      for (const node of graph.nodes) {
+        if (node.x !== undefined && node.y !== undefined) {
+          positions.set(node.coupleId, { x: node.x, y: node.y });
+        }
+      }
+      return positions;
+    },
+    getSettings: () => ({ layout: layoutMode, labels: showLabels, rings: showRings }),
+    applySettings: (s) => {
+      setLayoutMode(s.layout as LayoutMode);
+      setShowLabels(s.labels);
+      setShowRings(s.rings);
+    },
+    applyPositions: (positions) => {
+      const graph = graphRef.current;
+      if (!graph) return;
+      for (const node of graph.nodes) {
+        const pos = positions.get(node.coupleId);
+        if (pos) {
+          node.x = pos.x;
+          node.y = pos.y;
+          node.fx = pos.x;
+          node.fy = pos.y;
+        }
+      }
+    },
+    getCamera: () => zoomTransformRef.current,
+    applyCamera: (cam) => {
+      zoomTransformRef.current = cam;
+    },
+  };
+
+  const { copyShareLink, restoredState, updateURL } = useShareableView(viewStateConfig);
+  const [copied, setCopied] = useState(false);
+
   useEffect(() => {
     const svg = svgRef.current;
     if (!svg) return;
@@ -78,12 +134,31 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
     // Compute target positions
     const positions = getLayout(nodes, width, height);
 
-    // Set initial positions if not yet set
-    for (const node of nodes) {
-      const pos = positions.get(node.coupleId);
-      if (pos && node.x === undefined) {
-        node.x = pos.x + cx;
-        node.y = pos.y + cy;
+    // If restoring from URL, apply settings and pin nodes to restored positions
+    if (restoredState) {
+      viewStateConfig.applySettings(restoredState.settings as { layout: string; labels: boolean; rings: boolean });
+      zoomTransformRef.current = restoredState.camera;
+
+      const restoredLayout = (restoredState.settings.layout as LayoutMode) ?? layoutMode;
+      const baseline = computeBaselinePositions(nodes, restoredLayout, width, height);
+      const restored = applyDiffs(baseline, restoredState.diffs, width, height);
+      for (const node of nodes) {
+        const pos = restored.get(node.coupleId);
+        if (pos) {
+          node.x = pos.x;
+          node.y = pos.y;
+          node.fx = pos.x;
+          node.fy = pos.y;
+        }
+      }
+    } else {
+      // Set initial positions if not yet set
+      for (const node of nodes) {
+        const pos = positions.get(node.coupleId);
+        if (pos && node.x === undefined) {
+          node.x = pos.x + cx;
+          node.y = pos.y + cy;
+        }
       }
     }
 
@@ -99,11 +174,20 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
         g.attr("transform", event.transform);
         const k = event.transform.k;
         zoomScaleRef.current = k;
+        zoomTransformRef.current = { k: event.transform.k, x: event.transform.x, y: event.transform.y };
         // Only counter-scale node labels, not ring labels
         g.selectAll<SVGTextElement, unknown>(".node-label, .node-sublabel")
           .attr("transform", `scale(${1 / k})`);
+        updateURL();
       });
     sel.call(zoom);
+
+    // If restoring from shared URL, apply the saved camera transform
+    if (restoredState) {
+      const cam = zoomTransformRef.current;
+      const initialTransform = d3.zoomIdentity.translate(cam.x, cam.y).scale(cam.k);
+      sel.call(zoom.transform, initialTransform);
+    }
 
     // Decade guide rings
     const rootBirthYear = nodes.find((n) => n.generation === 0)?.birthYear ?? 1919;
@@ -118,7 +202,8 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
       decades.push(d);
     }
 
-    const ringsGroup = g.append("g").attr("class", "rings");
+    const ringsGroup = g.append("g").attr("class", "rings").attr("display", showRings ? null : "none");
+    ringsGroupRef.current = ringsGroup;
     for (const decade of decades) {
       const r = (decade - rootBirthYear) * scale;
       ringsGroup
@@ -271,6 +356,11 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
         nodeSel.attr("transform", (d) => `translate(${d.x ?? 0},${d.y ?? 0})`);
       });
 
+    // If restoring from shared URL, freeze the simulation — nodes are already pinned
+    if (restoredState) {
+      simulation.alpha(0);
+    }
+
     simulationRef.current = simulation;
 
     // Drag behavior
@@ -287,8 +377,7 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
       })
       .on("end", (event, d) => {
         if (!event.active) simulation.alphaTarget(0);
-        d.fx = null;
-        d.fy = null;
+        updateURL();
       });
 
     nodeSel.call(drag);
@@ -298,7 +387,7 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
     return () => {
       simulation.stop();
     };
-  }, [localData, rootCoupleId, getLayout, editMode]);
+  }, [localData, rootCoupleId, getLayout, editMode, restoredState]);
 
   // Toggle label visibility without rebuilding
   useEffect(() => {
@@ -306,6 +395,14 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
     labelSelRef.current?.attr("display", display);
     sublabelSelRef.current?.attr("display", display);
   }, [showLabels]);
+
+  useEffect(() => {
+    ringsGroupRef.current?.attr("display", showRings ? null : "none");
+  }, [showRings]);
+
+  useEffect(() => {
+    updateURL();
+  }, [layoutMode, showLabels, showRings, updateURL]);
 
   // Re-target forces when layout mode changes (without rebuilding)
   useEffect(() => {
@@ -319,6 +416,12 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
     const cx = width / 2;
     const cy = height / 2;
     const positions = getLayout(graph.nodes, width, height);
+
+    // Unpin all nodes so they animate to new layout positions
+    for (const node of graph.nodes) {
+      node.fx = null;
+      node.fy = null;
+    }
 
     sim
       .force(
@@ -432,6 +535,26 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
           }`}
         >
           Navne
+        </button>
+        <button
+          onClick={() => setShowRings((v) => !v)}
+          className={`px-3 py-1.5 rounded-md text-xs border transition-colors ${
+            showRings
+              ? "bg-blue-600 border-blue-600 text-white"
+              : "bg-[#1e2030] border-[#2a2d3e] text-gray-400 hover:bg-[#2a2d3e] hover:text-white"
+          }`}
+        >
+          Rings
+        </button>
+        <button
+          onClick={async () => {
+            await copyShareLink();
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+          }}
+          className="px-3 py-1.5 rounded-md text-xs border transition-colors bg-[#1e2030] border-[#2a2d3e] text-gray-400 hover:bg-[#2a2d3e] hover:text-white"
+        >
+          {copied ? "Copied!" : "Share"}
         </button>
       </div>
 
