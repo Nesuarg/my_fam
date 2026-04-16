@@ -1,3 +1,4 @@
+import * as d3 from "d3";
 import type { WheelNode } from "./wheel-graph";
 
 export interface Position {
@@ -141,12 +142,73 @@ export function computeBranchSizeLayout(
   return positions;
 }
 
+interface HierarchyDatum {
+  coupleId: string;
+  children: HierarchyDatum[];
+}
+
+function buildHierarchy(nodes: WheelNode[]): HierarchyDatum | null {
+  const root = nodes.find((n) => n.generation === 0);
+  if (!root) return null;
+
+  const childrenMap = new Map<string, WheelNode[]>();
+  for (const node of nodes) {
+    if (node.parentCoupleId) {
+      const siblings = childrenMap.get(node.parentCoupleId) ?? [];
+      siblings.push(node);
+      childrenMap.set(node.parentCoupleId, siblings);
+    }
+  }
+
+  function toDatum(node: WheelNode): HierarchyDatum {
+    const children = (childrenMap.get(node.coupleId) ?? [])
+      .sort((a, b) => a.birthOrder - b.birthOrder)
+      .map(toDatum);
+    return { coupleId: node.coupleId, children };
+  }
+
+  return toDatum(root);
+}
+
+export function computeTreeLayout(
+  nodes: WheelNode[],
+  _rootBirthYear: number,
+  width: number,
+  height: number,
+): Map<string, Position> {
+  const positions = new Map<string, Position>();
+  const datum = buildHierarchy(nodes);
+  if (!datum) return positions;
+
+  const padding = 40;
+  const root = d3.hierarchy(datum);
+  const treeLayout = d3.tree<HierarchyDatum>().size([
+    width - padding * 2,
+    height - padding * 2,
+  ]);
+  treeLayout(root);
+
+  // d3.tree sets x = horizontal spread, y = depth
+  // Convert to center-origin: subtract center offsets
+  const cx = width / 2;
+  const cy = height / 2;
+
+  for (const descendant of root.descendants()) {
+    positions.set(descendant.data.coupleId, {
+      x: (descendant.x ?? 0) + padding - cx,
+      y: (descendant.y ?? 0) + padding - cy,
+    });
+  }
+
+  return positions;
+}
+
 /**
  * Compute layout positions at the given viewport size, centered at (width/2, height/2).
  */
 export function computeBaselinePositions(
   nodes: WheelNode[],
-  layoutMode: "wheel" | "birthOrder" | "branchSize",
+  layoutMode: "wheel" | "birthOrder" | "branchSize" | "tree",
   width: number,
   height: number,
 ): Map<string, { x: number; y: number }> {
@@ -158,6 +220,9 @@ export function computeBaselinePositions(
       break;
     case "branchSize":
       positions = computeBranchSizeLayout(nodes, rootBirthYear, width, height);
+      break;
+    case "tree":
+      positions = computeTreeLayout(nodes, rootBirthYear, width, height);
       break;
     default:
       positions = computeWheelLayout(nodes, rootBirthYear, width, height);
