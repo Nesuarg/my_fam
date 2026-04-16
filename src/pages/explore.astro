@@ -1,0 +1,27 @@
+---
+import { loadRawFamilyData } from "../types/simple-family-utils";
+import FamilyWheel from "../components/FamilyWheel";
+import "../styles/global.css";
+
+const familyData = await loadRawFamilyData();
+---
+
+<html lang="da" class="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>Fabricius Familiehjul — Explore</title>
+    <meta name="description" content="Interaktiv visualisering af Fabricius familien" />
+    <style>
+      html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; }
+    </style>
+  </head>
+  <body>
+    <FamilyWheel
+      familyData={familyData}
+      rootCoupleId="niels-peter-dorthea"
+      client:only="react"
+    />
+  </body>
+</html>
