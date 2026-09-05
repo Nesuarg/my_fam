@@ -218,8 +218,11 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
         zoomScaleRef.current = k;
         zoomTransformRef.current = { k: event.transform.k, x: event.transform.x, y: event.transform.y };
         // Only counter-scale node labels, not ring labels
-        g.selectAll<SVGTextElement, unknown>(".node-label, .node-sublabel")
-          .attr("transform", projectorRef.current ? null : `scale(${1 / k})`);
+        // Labels scale with the drawing. Counter-scaling them to a constant
+        // screen size defeats the point of zooming: you zoom in to read a
+        // crowded branch, and out for the shape — neither works if the text
+        // never changes size, and at 100 people the names collide into a
+        // single smear when zoomed out.
         updateURL();
       });
     sel.call(zoom);
@@ -593,10 +596,6 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
   }, [selectedId]);
 
   useEffect(() => {
-    const k = zoomScaleRef.current;
-    labelSelRef.current?.attr("transform", projector ? null : `scale(${1 / k})`);
-    sublabelSelRef.current?.attr("transform", projector ? null : `scale(${1 / k})`);
-
     const url = new URL(window.location.href);
     if (projector) url.searchParams.set("projektor", "1");
     else url.searchParams.delete("projektor");
