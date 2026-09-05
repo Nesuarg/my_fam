@@ -129,3 +129,44 @@ export function buildWheelGraph(
 
   return { nodes, links };
 }
+
+/**
+ * Every node on the focused node's line of descent: itself, all its
+ * ancestors up to the root, and its whole subtree below. Branches that are
+ * neither ancestor nor descendant are left out.
+ */
+export function collectLineage(nodes: WheelNode[], focusId: string): Set<string> {
+  const lineage = new Set<string>();
+  const byId = new Map(nodes.map((n) => [n.coupleId, n]));
+  if (!byId.has(focusId)) return lineage;
+
+  const childrenOf = new Map<string, WheelNode[]>();
+  for (const node of nodes) {
+    if (node.parentCoupleId === null) continue;
+    const siblings = childrenOf.get(node.parentCoupleId) ?? [];
+    siblings.push(node);
+    childrenOf.set(node.parentCoupleId, siblings);
+  }
+
+  lineage.add(focusId);
+
+  // Upwards. The guard also stops a cycle from hanging the walk.
+  let ancestor = byId.get(focusId)?.parentCoupleId ?? null;
+  while (ancestor !== null && !lineage.has(ancestor)) {
+    lineage.add(ancestor);
+    ancestor = byId.get(ancestor)?.parentCoupleId ?? null;
+  }
+
+  // Downwards.
+  const queue = [focusId];
+  while (queue.length > 0) {
+    const current = queue.shift()!;
+    for (const child of childrenOf.get(current) ?? []) {
+      if (lineage.has(child.coupleId)) continue;
+      lineage.add(child.coupleId);
+      queue.push(child.coupleId);
+    }
+  }
+
+  return lineage;
+}

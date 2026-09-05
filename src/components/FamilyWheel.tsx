@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import * as d3 from "d3";
 import type { FamilyData } from "@/types/simple-family";
-import { buildWheelGraph, type WheelNode, type WheelLink } from "@/lib/wheel-graph";
+import { buildWheelGraph, collectLineage, type WheelNode, type WheelLink } from "@/lib/wheel-graph";
 import {
   computeWheelLayout,
   computeSequenceLayout,
@@ -440,15 +440,10 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
         linkSel.attr("opacity", linksAlwaysVisible ? 0.25 : 0);
         return;
       }
-      const focus = nodes.find((n) => n.coupleId === focusId);
-      nodeSel.attr("opacity", (n) => {
-        if (n.coupleId === focusId) return 1;
-        if (n.parentCoupleId === focusId) return 1;
-        if (focus?.parentCoupleId === n.coupleId) return 1;
-        return 0.15;
-      });
+      const lineage = collectLineage(nodes, focusId);
+      nodeSel.attr("opacity", (n) => (lineage.has(n.coupleId) ? 1 : 0.15));
       linkSel.attr("opacity", (l) =>
-        endpointId(l.source) === focusId || endpointId(l.target) === focusId
+        lineage.has(endpointId(l.source)) && lineage.has(endpointId(l.target))
           ? 0.8
           : linksAlwaysVisible
             ? 0.05

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { buildWheelGraph, type WheelNode, type WheelLink } from "./wheel-graph";
+import { buildWheelGraph, collectLineage, type WheelNode, type WheelLink } from "./wheel-graph";
 import type { FamilyData } from "@/types/simple-family";
 
 const minimalFamily: FamilyData = {
@@ -143,5 +143,62 @@ describe("buildWheelGraph", () => {
     expect(couple?.fabriciusPerson.id).toBe("c"); // Grete
     expect(couple?.partnerPerson?.id).toBe("d"); // Paul
     expect(couple?.birthYear).toBe(1943); // Grete's birth year
+  });
+});
+
+describe("collectLineage", () => {
+  const n = (coupleId: string, parentCoupleId: string | null): WheelNode => ({
+    coupleId,
+    generation: 0,
+    birthYear: 1950,
+    birthOrder: 1,
+    fabriciusPerson: { id: coupleId, firstName: "A", lastName: "B", age: 50, gender: "male", dob: "1/1/1950" },
+    partnerPerson: null,
+    branchLabel: "B",
+    isSingle: true,
+    childCount: 0,
+    parentCoupleId,
+  });
+
+  //        root
+  //       /    \
+  //      a      b
+  //     / \
+  //   a1   a2
+  //   /
+  // a1x
+  const nodes = [
+    n("root", null), n("a", "root"), n("b", "root"),
+    n("a1", "a"), n("a2", "a"), n("a1x", "a1"),
+  ];
+
+  it("includes every ancestor up to the root", () => {
+    expect(collectLineage(nodes, "a1x").has("a1")).toBe(true);
+    expect(collectLineage(nodes, "a1x").has("a")).toBe(true);
+    expect(collectLineage(nodes, "a1x").has("root")).toBe(true);
+  });
+
+  it("includes the whole subtree, not just direct children", () => {
+    const lineage = collectLineage(nodes, "a");
+    expect(lineage.has("a1")).toBe(true);
+    expect(lineage.has("a2")).toBe(true);
+    expect(lineage.has("a1x")).toBe(true);
+  });
+
+  it("excludes branches that are neither ancestors nor descendants", () => {
+    expect(collectLineage(nodes, "a1x").has("b")).toBe(false);
+    expect(collectLineage(nodes, "a").has("b")).toBe(false);
+  });
+
+  it("includes the focused node itself", () => {
+    expect(collectLineage(nodes, "a1").has("a1")).toBe(true);
+  });
+
+  it("returns everything reachable from the root", () => {
+    expect(collectLineage(nodes, "root").size).toBe(nodes.length);
+  });
+
+  it("survives an unknown id", () => {
+    expect(collectLineage(nodes, "nope").size).toBe(0);
   });
 });
