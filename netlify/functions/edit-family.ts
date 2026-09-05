@@ -230,6 +230,53 @@ function applyDeleteNode(data: FamilyData, nodeId: string): FamilyData {
   return result;
 }
 
+// --- Local backend (netlify dev) ---
+//
+// Under `netlify dev` there is no reason to touch the real repository: edits
+// land in the working copy and become a local commit, which the family can
+// review and push when they are happy. This also means local editing needs no
+// GitHub token, so a mistake cannot reach production.
+
+const LOCAL_FILE = "content/couples.json";
+
+function isLocal(): boolean {
+  return process.env.NETLIFY_DEV === "true" || process.env.FAMILY_EDIT_LOCAL === "1";
+}
+
+function projectRoot(): string {
+  return process.env.FAMILY_EDIT_ROOT ?? process.cwd();
+}
+
+async function readLocalFile(): Promise<FamilyData> {
+  const { readFile } = await import("node:fs/promises");
+  const { join } = await import("node:path");
+  return JSON.parse(await readFile(join(projectRoot(), LOCAL_FILE), "utf-8"));
+}
+
+async function commitLocalFile(data: FamilyData, message: string): Promise<string> {
+  const { writeFile } = await import("node:fs/promises");
+  const { join } = await import("node:path");
+  const { execFile } = await import("node:child_process");
+  const { promisify } = await import("node:util");
+  const run = promisify(execFile);
+
+  const root = projectRoot();
+  await writeFile(join(root, LOCAL_FILE), JSON.stringify(data, null, "\t") + "\n", "utf-8");
+
+  // execFile with an argument array — never a shell — because the message
+  // carries names typed by whoever is at the keyboard.
+  await run("git", ["add", "--", LOCAL_FILE], { cwd: root });
+
+  // Saving a field without changing it is not an error, it is just a no-op.
+  const staged = await run("git", ["diff", "--cached", "--name-only", "--", LOCAL_FILE], { cwd: root });
+  if (staged.stdout.trim() !== "") {
+    await run("git", ["commit", "-m", message, "--", LOCAL_FILE], { cwd: root });
+  }
+
+  const { stdout } = await run("git", ["rev-parse", "HEAD"], { cwd: root });
+  return stdout.trim();
+}
+
 // --- GitHub API ---
 
 const REPO = "Nesuarg/my_fam";
@@ -339,12 +386,24 @@ export default async function handler(req: Request) {
     return Response.json({ ok: false, error: "unauthorized", message: "Invalid password" }, { status: 401 });
   }
 
+  const body = await req.json();
+
+  if (isLocal()) {
+    try {
+      const currentData = await readLocalFile();
+      const { data: updatedData, message } = applyEdit(currentData, body);
+      const commitSha = await commitLocalFile(updatedData, message);
+      return Response.json({ ok: true, data: updatedData, commitSha, local: true });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Unknown error";
+      return Response.json({ ok: false, error: "error", message }, { status: 400 });
+    }
+  }
+
   const githubToken = process.env.GITHUB_TOKEN;
   if (!githubToken) {
     return Response.json({ ok: false, error: "config", message: "GitHub token not configured" }, { status: 500 });
   }
-
-  const body = await req.json();
 
   for (let attempt = 0; attempt < 2; attempt++) {
     try {
