@@ -746,6 +746,14 @@
 			"gender": "female",
 			"dob": "8/14/2010",
 			"age": 16
+		},
+		{
+			"id": "herman",
+			"firstName": "Herman",
+			"lastName": "Paulsen",
+			"gender": "male",
+			"dob": "5/29/2021",
+			"age": 5
 		}
 	],
 	"couples": [
@@ -1070,7 +1078,13 @@
 			"id": "peter-camilla",
 			"person1Id": "peter",
 			"person2Id": "camilla",
-			"relationshipType": "married"
+			"relationshipType": "married",
+			"children": [
+				{
+					"personId": "herman",
+					"birthOrder": 1
+				}
+			]
 		},
 		{
 			"id": "helle-preben",
