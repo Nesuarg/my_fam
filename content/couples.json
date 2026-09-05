@@ -578,6 +578,22 @@
 			"gender": "female",
 			"dob": "11/1/1970",
 			"age": 54
+		},
+		{
+			"id": "esben",
+			"firstName": "Esben",
+			"lastName": "Thomsen",
+			"gender": "male",
+			"dob": "8/27/2017",
+			"age": 7
+		},
+		{
+			"id": "buster",
+			"firstName": "Buster",
+			"lastName": "Thomsen",
+			"gender": "male",
+			"dob": "5/28/2021",
+			"age": 3
 		}
 	],
 	"couples": [
@@ -876,7 +892,17 @@
 			"id": "selma-jens",
 			"person1Id": "selma",
 			"person2Id": "jens-selma-spouse",
-			"relationshipType": "married"
+			"relationshipType": "married",
+			"children": [
+				{
+					"personId": "esben",
+					"birthOrder": 1
+				},
+				{
+					"personId": "buster",
+					"birthOrder": 2
+				}
+			]
 		},
 		{
 			"id": "bo-akannguaq",
