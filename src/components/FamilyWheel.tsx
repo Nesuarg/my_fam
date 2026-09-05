@@ -273,21 +273,29 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
     ringsGroupRef.current = ringsGroup;
     for (const decade of decades) {
       const r = (decade - rootBirthYear) * scale;
+      // Half-centuries carry the eye; the decades between them are quieter.
+      const major = decade % 50 === 0;
       ringsGroup
         .append("circle")
         .attr("cx", cx)
         .attr("cy", cy)
         .attr("r", r)
         .attr("fill", "none")
-        .attr("stroke", "#1a1d2e")
-        .attr("stroke-width", 0.5);
+        .attr("stroke", major ? "#3d4460" : "#282d40")
+        .attr("stroke-width", major ? 1.4 : 1);
       ringsGroup
         .append("text")
         .attr("x", cx + r * Math.sin(Math.PI / 4))
         .attr("y", cy - r * Math.cos(Math.PI / 4))
-        .attr("fill", "#2a2d3e")
-        .attr("font-size", 10)
+        .attr("fill", major ? "#98a1ba" : "#6c7590")
+        .attr("font-size", major ? 12 : 11)
+        .attr("font-weight", major ? 600 : 400)
         .attr("text-anchor", "middle")
+        // A halo of the page colour, so the year stays readable where it
+        // crosses a link or sits behind a node.
+        .attr("stroke", "#0f1117")
+        .attr("stroke-width", 3.5)
+        .attr("paint-order", "stroke")
         .text(String(decade));
     }
 
