@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import * as d3 from "d3";
 import type { FamilyData } from "@/types/simple-family";
 import { buildWheelGraph, collectLineage, type WheelNode, type WheelLink } from "@/lib/wheel-graph";
@@ -97,6 +97,14 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
   const highlightRef = useRef<((focusId: string | null) => void) | null>(null);
   const zoomRef = useRef<d3.ZoomBehavior<SVGSVGElement, unknown> | null>(null);
   const fitRef = useRef<(() => void) | null>(null);
+  // Timeline playback: the year the wheel is currently showing, or null for
+  // "show everyone". revealRef is set by the draw effect.
+  const [playYear, setPlayYear] = useState<number | null>(null);
+  const [playing, setPlaying] = useState(false);
+  const [yearsPerSecond, setYearsPerSecond] = useState(4);
+  const revealRef = useRef<((year: number | null) => void) | null>(null);
+  const playYearRef = useRef<number | null>(null);
+  playYearRef.current = playYear;
 
   const viewStateConfig: ViewStateConfig<{ layout: string; labels: boolean; rings: boolean }> = {
     baseline: () => {
@@ -533,6 +541,28 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
     highlightRef.current = applyHighlight;
     applyHighlight(selectedIdRef.current);
 
+    // A node exists from the year it was born. A link needs both ends to
+    // exist, otherwise a branch would appear to grow out of nothing.
+    const bornBy = (id: string, year: number) => {
+      const node = nodes.find((n) => n.coupleId === id);
+      return node !== undefined && node.birthYear <= year;
+    };
+    const applyYear = (year: number | null) => {
+      if (year === null) {
+        nodeSel.attr("display", null);
+        linkSel.attr("display", null);
+        return;
+      }
+      nodeSel.attr("display", (d) => (d.birthYear <= year ? null : "none"));
+      linkSel.attr("display", (l) =>
+        bornBy(endpointId(l.source), year) && bornBy(endpointId(l.target), year)
+          ? null
+          : "none",
+      );
+    };
+    revealRef.current = applyYear;
+    applyYear(playYearRef.current);
+
     nodeSel.call(drag);
 
     sel.on("click", () => {
@@ -602,6 +632,28 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
   useEffect(() => {
     highlightRef.current?.(selectedId);
   }, [selectedId]);
+
+  useEffect(() => {
+    revealRef.current?.(playYear);
+  }, [playYear]);
+
+  const [firstYear, lastYear] = useMemo(() => {
+    const years = localData.people
+      .map((p) => Number(p.dob.match(/(\d{4})$/)?.[1]))
+      .filter((y) => Number.isFinite(y));
+    return years.length > 0 ? [Math.min(...years), Math.max(...years)] : [1900, 2000];
+  }, [localData]);
+
+  useEffect(() => {
+    if (!playing) return;
+    const id = setInterval(() => {
+      setPlayYear((prev) => {
+        const next = (prev ?? firstYear) + 1;
+        return next > lastYear ? firstYear : next;
+      });
+    }, 1000 / yearsPerSecond);
+    return () => clearInterval(id);
+  }, [playing, yearsPerSecond, firstYear, lastYear]);
 
   useEffect(() => {
     const url = new URL(window.location.href);
@@ -780,6 +832,72 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
         >
           {copied ? "Copied!" : "Share"}
         </button>
+      </div>
+
+      {/* Timeline playback */}
+      <div
+        className={`absolute z-10 flex items-center gap-3 rounded-lg border border-[#2a2d3e] bg-[#1e2030]/95 px-4 py-2.5 ${
+          projector ? "bottom-20 left-1/2 -translate-x-1/2" : "bottom-5 left-1/2 -translate-x-1/2"
+        }`}
+      >
+        <button
+          onClick={() => {
+            if (!playing && playYear === null) setPlayYear(firstYear);
+            setPlaying((v) => !v);
+          }}
+          className={`rounded-md text-white ${projector ? "px-5 py-2.5 text-lg" : "px-3 py-1.5 text-sm"} ${
+            playing ? "bg-amber-500 text-black" : "bg-blue-600 hover:bg-blue-700"
+          }`}
+        >
+          {playing ? "Pause" : "Afspil"}
+        </button>
+
+        <span
+          className={`tabular-nums font-semibold text-white ${projector ? "text-3xl w-24" : "text-xl w-16"} text-center`}
+        >
+          {playYear ?? "alle"}
+        </span>
+
+        <input
+          type="range"
+          min={firstYear}
+          max={lastYear}
+          value={playYear ?? lastYear}
+          onChange={(e) => {
+            setPlaying(false);
+            setPlayYear(Number(e.target.value));
+          }}
+          className={projector ? "w-96" : "w-56"}
+        />
+
+        <div className="flex gap-1">
+          {[2, 4, 8, 16].map((speed) => (
+            <button
+              key={speed}
+              onClick={() => setYearsPerSecond(speed)}
+              title={`${speed} år i sekundet`}
+              className={`rounded ${projector ? "px-3 py-1.5 text-base" : "px-2 py-1 text-xs"} ${
+                yearsPerSecond === speed
+                  ? "bg-blue-600 text-white"
+                  : "bg-[#2a2d3e] text-gray-400 hover:text-white"
+              }`}
+            >
+              {speed}×
+            </button>
+          ))}
+        </div>
+
+        {playYear !== null && (
+          <button
+            onClick={() => {
+              setPlaying(false);
+              setPlayYear(null);
+            }}
+            className={`rounded bg-[#2a2d3e] text-gray-400 hover:text-white ${projector ? "px-3 py-1.5 text-base" : "px-2 py-1 text-xs"}`}
+          >
+            Vis alle
+          </button>
+        )}
       </div>
 
       {/* Legend */}
