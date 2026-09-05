@@ -858,6 +858,30 @@
 			"gender": "female",
 			"dob": "11/23/2003",
 			"age": 22
+		},
+		{
+			"id": "uno",
+			"firstName": "Uno",
+			"lastName": "Sonne",
+			"gender": "male",
+			"dob": "6/1/1994",
+			"age": 32
+		},
+		{
+			"id": "david",
+			"firstName": "David",
+			"lastName": "Sonne",
+			"gender": "male",
+			"dob": "7/17/1996",
+			"age": 30
+		},
+		{
+			"id": "naomi",
+			"firstName": "Naomi",
+			"lastName": "Sonne",
+			"gender": "female",
+			"dob": "8/13/1987",
+			"age": 39
 		}
 	],
 	"couples": [
@@ -1187,7 +1211,21 @@
 			"id": "bo-akannguaq",
 			"person1Id": "bo",
 			"person2Id": "akannguaq",
-			"relationshipType": "married"
+			"relationshipType": "married",
+			"children": [
+				{
+					"personId": "naomi",
+					"birthOrder": 1
+				},
+				{
+					"personId": "uno",
+					"birthOrder": 2
+				},
+				{
+					"personId": "david",
+					"birthOrder": 3
+				}
+			]
 		},
 		{
 			"id": "peter-camilla",
