@@ -370,12 +370,10 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
     nodeSel
       .append("circle")
       .attr("r", radiusOf)
-      .attr("fill", (d) => {
-        const color = GEN_COLORS[Math.min(d.generation, GEN_COLORS.length - 1)];
-        return d.isSingle ? color + "33" : color;
-      })
-      .attr("stroke", (d) => GEN_COLORS[Math.min(d.generation, GEN_COLORS.length - 1)])
-      .attr("stroke-width", (d) => (d.isSingle ? 1.5 : 0));
+      // Everyone gets the same solid dot. Having no partner yet is not a
+      // property worth rendering as a different kind of node — the tooltip
+      // still says "Enlig".
+      .attr("fill", (d) => GEN_COLORS[Math.min(d.generation, GEN_COLORS.length - 1)]);
 
     // Full name above
     const labelsSel = nodeSel
