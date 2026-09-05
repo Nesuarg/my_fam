@@ -167,6 +167,69 @@ function applyEditPerson(
   return result;
 }
 
+/** Suffix wheel-graph gives a child who has no couple of their own. */
+const UNCOUPLED_SUFFIX = "-uncoupled";
+
+/** Drops the child entry for a person from whichever couple lists them. */
+function detachChild(data: FamilyData, personId: string): void {
+  for (const couple of data.couples) {
+    if (!couple.children) continue;
+    const index = couple.children.findIndex((child) => child.personId === personId);
+    if (index !== -1) {
+      couple.children.splice(index, 1);
+      return;
+    }
+  }
+}
+
+function applyDeleteNode(data: FamilyData, nodeId: string): FamilyData {
+  const result: FamilyData = JSON.parse(JSON.stringify(data));
+
+  if (nodeId.endsWith(UNCOUPLED_SUFFIX)) {
+    const personId = nodeId.slice(0, -UNCOUPLED_SUFFIX.length);
+    if (!result.people.some((p) => p.id === personId)) {
+      throw new Error(`Person ${personId} not found`);
+    }
+    detachChild(result, personId);
+    result.people = result.people.filter((p) => p.id !== personId);
+    return result;
+  }
+
+  const target = result.couples.find((c) => c.id === nodeId);
+  if (!target) throw new Error(`Couple ${nodeId} not found`);
+
+  const isReferencedAsChild = result.couples.some((c) =>
+    (c.children ?? []).some((child) => child.ownFamilyId === nodeId),
+  );
+  if (!isReferencedAsChild) throw new Error("Stamparret kan ikke slettes");
+
+  const doomedCouples = new Set<string>();
+  const doomedPeople = new Set<string>();
+  const queue = [nodeId];
+  while (queue.length > 0) {
+    const currentId = queue.shift()!;
+    if (doomedCouples.has(currentId)) continue;
+    doomedCouples.add(currentId);
+
+    const couple = result.couples.find((c) => c.id === currentId);
+    if (!couple) continue;
+
+    doomedPeople.add(couple.person1Id);
+    if (couple.person2Id) doomedPeople.add(couple.person2Id);
+
+    for (const child of couple.children ?? []) {
+      doomedPeople.add(child.personId);
+      if (child.ownFamilyId) queue.push(child.ownFamilyId);
+    }
+  }
+
+  detachChild(result, target.person1Id);
+  result.couples = result.couples.filter((c) => !doomedCouples.has(c.id));
+  result.people = result.people.filter((p) => !doomedPeople.has(p.id));
+
+  return result;
+}
+
 // --- GitHub API ---
 
 const REPO = "Nesuarg/my_fam";
@@ -242,6 +305,15 @@ function applyEdit(data: FamilyData, body: Record<string, unknown>): { data: Fam
       return {
         data: applyEditPerson(data, personId, fields),
         message: `Edit ${personId}`,
+      };
+    }
+    case "deleteNode": {
+      const nodeId = body.nodeId as string;
+      const updated = applyDeleteNode(data, nodeId);
+      const removed = data.people.length - updated.people.length;
+      return {
+        data: updated,
+        message: `Delete ${nodeId} and ${removed} ${removed === 1 ? "person" : "people"}`,
       };
     }
     default:

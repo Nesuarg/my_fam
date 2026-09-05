@@ -13,8 +13,8 @@ import {
 import { useShareableView } from "@/lib/view-state";
 import type { ViewStateConfig } from "@/lib/view-state";
 import { applyDiffs } from "@/lib/view-state/diff";
-import { applyAddChild, applyAddCouple, applyEditPerson } from "@/lib/family-edits";
-import { getStoredPassword, storePassword, addChild as apiAddChild, addCouple as apiAddCouple, editPerson as apiEditPerson, validatePassword } from "@/lib/family-api";
+import { applyAddChild, applyAddCouple, applyDeleteNode, applyEditPerson, countDeletion } from "@/lib/family-edits";
+import { getStoredPassword, storePassword, addChild as apiAddChild, addCouple as apiAddCouple, editPerson as apiEditPerson, deleteNode as apiDeleteNode, validatePassword } from "@/lib/family-api";
 import PasswordModal from "./PasswordModal";
 import EditPanel from "./EditPanel";
 import SyncBadge from "./SyncBadge";
@@ -47,6 +47,7 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
     mouseY: number;
   } | null>(null);
   const graphRef = useRef<{ nodes: WheelNode[]; links: WheelLink[] } | null>(null);
+  const graphDataRef = useRef<FamilyData | null>(null);
   const simulationRef = useRef<d3.Simulation<WheelNode, WheelLink> | null>(null);
   const zoomScaleRef = useRef(1);
   const labelSelRef = useRef<d3.Selection<SVGTextElement, WheelNode, SVGGElement, unknown> | null>(null);
@@ -152,9 +153,11 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
     const cx = width / 2;
     const cy = height / 2;
 
-    // Build graph only once
-    if (!graphRef.current) {
+    // Rebuild only when the data behind it actually changed. Keying off the
+    // data itself avoids depending on effect declaration order.
+    if (!graphRef.current || graphDataRef.current !== localData) {
       graphRef.current = buildWheelGraph(localData, rootCoupleId);
+      graphDataRef.current = localData;
     }
     const { nodes, links } = graphRef.current;
 
@@ -580,10 +583,6 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
     return () => clearTimeout(id);
   }, [projector, layoutMode, showLabels, localData]);
 
-  useEffect(() => {
-    graphRef.current = null;
-  }, [localData]);
-
   const handleEditToggle = async () => {
     if (editMode) {
       setEditMode(false);
@@ -626,6 +625,16 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
     const updated = applyAddChild(localData, coupleId, child);
     setLocalData(updated);
     const res = await apiAddChild(password, coupleId, child);
+    if (res.ok) setSyncTimestamp(Date.now());
+  };
+
+  const handleDeleteNode = async (nodeId: string) => {
+    if (!password) return;
+    const updated = applyDeleteNode(localData, nodeId);
+    setLocalData(updated);
+    setEditNode(null);
+    setSelectedId(null);
+    const res = await apiDeleteNode(password, nodeId);
     if (res.ok) setSyncTimestamp(Date.now());
   };
 
@@ -770,6 +779,8 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
           onEditPerson={handleEditPerson}
           onAddChild={handleAddChild}
           onAddCouple={handleAddCouple}
+          onDelete={handleDeleteNode}
+          deleteCount={countDeletion(localData, editNode.node.coupleId)}
           onClose={() => setEditNode(null)}
           large={projector}
         />

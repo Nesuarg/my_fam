@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { applyAddChild, applyAddCouple, applyEditPerson, generatePersonId } from "./family-edits";
+import { applyAddChild, applyAddCouple, applyDeleteNode, applyEditPerson, generatePersonId } from "./family-edits";
 import type { FamilyData } from "@/types/simple-family";
 
 function makeData(): FamilyData {
@@ -191,5 +191,89 @@ describe("applyEditPerson", () => {
   it("throws on invalid dob format", () => {
     const data = makeData();
     expect(() => applyEditPerson(data, "alice", { dob: "not-a-date" })).toThrow("Invalid date format");
+  });
+});
+
+/**
+ *   alice & bob            (root)
+ *     └ charlie & dana
+ *         ├ erik & fiona
+ *         │   └ gustav      (leaf child, no couple of his own)
+ *         └ hanna           (leaf child)
+ */
+function makeDeepData(): FamilyData {
+  const person = (id: string, first: string) => ({
+    id, firstName: first, lastName: "Smith", age: 30,
+    gender: "female" as const, dob: "1/1/1990",
+  });
+  return {
+    people: ["alice", "bob", "charlie", "dana", "erik", "fiona", "gustav", "hanna"].map((id) =>
+      person(id, id[0].toUpperCase() + id.slice(1)),
+    ),
+    couples: [
+      {
+        id: "alice-bob", person1Id: "alice", person2Id: "bob", relationshipType: "married",
+        children: [{ personId: "charlie", birthOrder: 1, ownFamilyId: "charlie-dana" }],
+      },
+      {
+        id: "charlie-dana", person1Id: "charlie", person2Id: "dana", relationshipType: "married",
+        children: [
+          { personId: "erik", birthOrder: 1, ownFamilyId: "erik-fiona" },
+          { personId: "hanna", birthOrder: 2 },
+        ],
+      },
+      {
+        id: "erik-fiona", person1Id: "erik", person2Id: "fiona", relationshipType: "married",
+        children: [{ personId: "gustav", birthOrder: 1 }],
+      },
+    ],
+  };
+}
+
+describe("applyDeleteNode", () => {
+  it("removes the couple, both partners and every descendant", () => {
+    const result = applyDeleteNode(makeDeepData(), "charlie-dana");
+    const ids = result.people.map((p) => p.id).sort();
+
+    expect(ids).toEqual(["alice", "bob"]);
+    expect(result.couples.map((c) => c.id)).toEqual(["alice-bob"]);
+  });
+
+  it("detaches the deleted node from its parent's children", () => {
+    const result = applyDeleteNode(makeDeepData(), "charlie-dana");
+    expect(result.couples.find((c) => c.id === "alice-bob")!.children).toEqual([]);
+  });
+
+  it("leaves sibling branches alone", () => {
+    const result = applyDeleteNode(makeDeepData(), "erik-fiona");
+    const ids = result.people.map((p) => p.id).sort();
+
+    expect(ids).toEqual(["alice", "bob", "charlie", "dana", "hanna"]);
+    expect(result.couples.find((c) => c.id === "charlie-dana")!.children).toEqual([
+      { personId: "hanna", birthOrder: 2 },
+    ]);
+  });
+
+  it("deletes a childless child that has no couple of its own", () => {
+    const result = applyDeleteNode(makeDeepData(), "hanna-uncoupled");
+
+    expect(result.people.find((p) => p.id === "hanna")).toBeUndefined();
+    expect(result.couples.find((c) => c.id === "charlie-dana")!.children!.map((c) => c.personId))
+      .toEqual(["erik"]);
+  });
+
+  it("refuses to delete the root couple", () => {
+    expect(() => applyDeleteNode(makeDeepData(), "alice-bob")).toThrow(/stampar/i);
+  });
+
+  it("refuses an unknown node", () => {
+    expect(() => applyDeleteNode(makeDeepData(), "nope")).toThrow(/not found/i);
+  });
+
+  it("does not mutate the input", () => {
+    const data = makeDeepData();
+    applyDeleteNode(data, "charlie-dana");
+    expect(data.people).toHaveLength(8);
+    expect(data.couples).toHaveLength(3);
   });
 });

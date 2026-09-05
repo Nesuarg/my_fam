@@ -76,3 +76,7 @@ export async function editPerson(
 ): Promise<ApiResponse> {
   return callApi(password, { action: "editPerson", personId, fields });
 }
+
+export async function deleteNode(password: string, nodeId: string): Promise<ApiResponse> {
+  return callApi(password, { action: "deleteNode", nodeId });
+}

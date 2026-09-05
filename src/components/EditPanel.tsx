@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { WheelNode } from "@/lib/wheel-graph";
 
-type EditView = "details" | "addChild" | "addPartner";
+type EditView = "details" | "addChild" | "addPartner" | "confirmDelete";
 
 /** Sizing for the two contexts: a laptop panel, and one read across a room. */
 const sizes = (large: boolean) => ({
@@ -21,6 +21,9 @@ interface Props {
   onEditPerson: (personId: string, fields: Record<string, string>) => void;
   onAddChild: (coupleId: string, child: { firstName: string; lastName: string; gender: "male" | "female" | "other"; dob: string }) => void;
   onAddCouple: (personId: string, partner: { firstName: string; lastName: string; gender: "male" | "female" | "other"; dob: string }, relationshipType: string) => void;
+  onDelete: (nodeId: string) => void;
+  /** How many people the delete would remove, so the prompt can be specific. */
+  deleteCount: number;
   onClose: () => void;
   large?: boolean;
 }
@@ -109,7 +112,7 @@ function NewPersonForm({
   );
 }
 
-export default function EditPanel({ node, x, y, onEditPerson, onAddChild, onAddCouple, onClose, large = false }: Props) {
+export default function EditPanel({ node, x, y, onEditPerson, onAddChild, onAddCouple, onDelete, deleteCount, onClose, large = false }: Props) {
   const [view, setView] = useState<EditView>("details");
   const sz = sizes(large);
 
@@ -151,6 +154,14 @@ export default function EditPanel({ node, x, y, onEditPerson, onAddChild, onAddC
             {node.isSingle && !node.partnerPerson && (
               <button onClick={() => setView("addPartner")} className={`${sz.button} bg-[#2a2d3e] text-gray-300 hover:text-white`}>+ Partner</button>
             )}
+            {node.parentCoupleId !== null && (
+              <button
+                onClick={() => setView("confirmDelete")}
+                className={`${sz.button} ml-auto bg-[#2a2d3e] text-red-400 hover:bg-red-900/40 hover:text-red-300`}
+              >
+                Slet
+              </button>
+            )}
           </div>
         </>
       )}
@@ -163,6 +174,34 @@ export default function EditPanel({ node, x, y, onEditPerson, onAddChild, onAddC
             onSave={(child) => { onAddChild(node.coupleId, child); onClose(); }}
             onCancel={() => setView("details")}
           />
+        </>
+      )}
+
+      {view === "confirmDelete" && (
+        <>
+          <div className={`text-white mb-2 ${sz.caption}`}>
+            Slet {node.fabriciusPerson.firstName}
+            {node.partnerPerson ? ` & ${node.partnerPerson.firstName}` : ""}?
+          </div>
+          <p className={`text-gray-400 mb-1 ${sz.caption}`}>
+            {deleteCount === 1
+              ? "Fjerner 1 person."
+              : `Fjerner ${deleteCount} personer — hele grenen nedad, inklusive børn og børnebørn.`}
+          </p>
+          <p className={`text-gray-600 mb-3 ${sz.caption}`}>
+            Gemmes som en commit, så det kan rulles tilbage i git.
+          </p>
+          <div className="flex gap-2">
+            <button
+              onClick={() => { onDelete(node.coupleId); onClose(); }}
+              className={`${sz.button} bg-red-600 text-white hover:bg-red-700`}
+            >
+              {deleteCount === 1 ? "Slet 1 person" : `Slet ${deleteCount} personer`}
+            </button>
+            <button onClick={() => setView("details")} className={`${sz.button} bg-[#2a2d3e] text-gray-400 hover:text-white`}>
+              Annuller
+            </button>
+          </div>
         </>
       )}
 

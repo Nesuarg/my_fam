@@ -144,3 +144,84 @@ export function applyEditPerson(
 
   return result;
 }
+
+/** Suffix wheel-graph gives a child who has no couple of their own. */
+const UNCOUPLED_SUFFIX = "-uncoupled";
+
+/**
+ * Removes a node and everything below it: the couple, both partners, every
+ * descendant couple and their people, and the child entry pointing at it from
+ * the parent. The root couple cannot go — it is what the whole tree hangs from.
+ */
+export function applyDeleteNode(data: FamilyData, nodeId: string): FamilyData {
+  const result = cloneData(data);
+
+  // A childless child is only a person; there is no couple to remove.
+  if (nodeId.endsWith(UNCOUPLED_SUFFIX)) {
+    const personId = nodeId.slice(0, -UNCOUPLED_SUFFIX.length);
+    if (!result.people.some((p) => p.id === personId)) {
+      throw new Error(`Person ${personId} not found`);
+    }
+    detachChild(result, personId);
+    result.people = result.people.filter((p) => p.id !== personId);
+    return result;
+  }
+
+  const target = result.couples.find((c) => c.id === nodeId);
+  if (!target) throw new Error(`Couple ${nodeId} not found`);
+
+  const isReferencedAsChild = result.couples.some((c) =>
+    (c.children ?? []).some((child) => child.ownFamilyId === nodeId),
+  );
+  if (!isReferencedAsChild) {
+    throw new Error("Stamparret kan ikke slettes");
+  }
+
+  // Walk down, collecting every couple and person that goes with it.
+  const doomedCouples = new Set<string>();
+  const doomedPeople = new Set<string>();
+  const queue = [nodeId];
+  while (queue.length > 0) {
+    const currentId = queue.shift()!;
+    if (doomedCouples.has(currentId)) continue;
+    doomedCouples.add(currentId);
+
+    const couple = result.couples.find((c) => c.id === currentId);
+    if (!couple) continue;
+
+    doomedPeople.add(couple.person1Id);
+    if (couple.person2Id) doomedPeople.add(couple.person2Id);
+
+    for (const child of couple.children ?? []) {
+      doomedPeople.add(child.personId);
+      if (child.ownFamilyId) queue.push(child.ownFamilyId);
+    }
+  }
+
+  detachChild(result, target.person1Id);
+  result.couples = result.couples.filter((c) => !doomedCouples.has(c.id));
+  result.people = result.people.filter((p) => !doomedPeople.has(p.id));
+
+  return result;
+}
+
+/** Drops the child entry for a person from whichever couple lists them. */
+function detachChild(data: FamilyData, personId: string): void {
+  for (const couple of data.couples) {
+    if (!couple.children) continue;
+    const index = couple.children.findIndex((child) => child.personId === personId);
+    if (index !== -1) {
+      couple.children.splice(index, 1);
+      return;
+    }
+  }
+}
+
+/** How many people a delete would remove — for the confirmation prompt. */
+export function countDeletion(data: FamilyData, nodeId: string): number {
+  try {
+    return data.people.length - applyDeleteNode(data, nodeId).people.length;
+  } catch {
+    return 0;
+  }
+}
