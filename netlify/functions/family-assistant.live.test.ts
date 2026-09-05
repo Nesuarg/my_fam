@@ -1,10 +1,10 @@
 import { describe, it, expect } from "vitest";
 import handler from "./family-assistant";
 
-// These call the real `claude` CLI, so they cost money (~$0.15 a turn) and need
-// a machine with Claude installed. Off by default:
+// These call the real API, so they cost money and need ANTHROPIC_API_KEY.
+// Off by default:
 //   FAMILY_ASSISTANT_LIVE=1 pnpm vitest run netlify/functions/family-assistant.live.test.ts
-const live = process.env.FAMILY_ASSISTANT_LIVE === "1";
+const live = process.env.FAMILY_ASSISTANT_LIVE === "1" && !!process.env.ANTHROPIC_API_KEY;
 
 process.env.FAMILY_EDIT_LOCAL = "1";
 process.env.FAMILY_EDIT_PASSWORD = "fabricius";
@@ -17,7 +17,7 @@ const post = (turns: unknown) =>
     body: JSON.stringify({ turns }),
   }));
 
-describe.skipIf(!live)("family-assistant against a real Claude", () => {
+describe.skipIf(!live)("family-assistant against the real API", () => {
   it("asks for the gender rather than guessing it from the name", async () => {
     const res = await post([{ role: "user", content: "tilføj barn til Mette og Mads, Iben der er født 11 august 2013" }]);
     const body = await res.json();
