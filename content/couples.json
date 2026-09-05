@@ -810,6 +810,54 @@
 			"gender": "female",
 			"dob": "9/18/2026",
 			"age": 0
+		},
+		{
+			"id": "oswald",
+			"firstName": "Oswald",
+			"lastName": "Nielsen",
+			"gender": "male",
+			"dob": "6/3/2000",
+			"age": 26
+		},
+		{
+			"id": "lilly",
+			"firstName": "Lilly",
+			"lastName": "Nielsen",
+			"gender": "female",
+			"dob": "4/28/2006",
+			"age": 20
+		},
+		{
+			"id": "lydia",
+			"firstName": "Lydia",
+			"lastName": "Nielsen",
+			"gender": "female",
+			"dob": "4/28/2012",
+			"age": 14
+		},
+		{
+			"id": "yrsa-2",
+			"firstName": "Yrsa",
+			"lastName": "Nielsen",
+			"gender": "female",
+			"dob": "10/1/2003",
+			"age": 22
+		},
+		{
+			"id": "flora",
+			"firstName": "Flora",
+			"lastName": "Nielsen",
+			"gender": "female",
+			"dob": "4/21/2006",
+			"age": 20
+		},
+		{
+			"id": "frida-2",
+			"firstName": "Frida",
+			"lastName": "Nielsen",
+			"gender": "female",
+			"dob": "11/23/2003",
+			"age": 22
 		}
 	],
 	"couples": [
@@ -1027,19 +1075,19 @@
 			"relationshipType": "married",
 			"children": [
 				{
-					"personId": "kamille",
+					"personId": "ida-marie",
 					"birthOrder": 1,
+					"ownFamilyId": "ida-marie-martin"
+				},
+				{
+					"personId": "kamille",
+					"birthOrder": 2,
 					"ownFamilyId": "kamille-christian"
 				},
 				{
 					"personId": "mikkel-asbjorn",
-					"birthOrder": 2,
-					"ownFamilyId": "mikkel-mathilde"
-				},
-				{
-					"personId": "ida-marie",
 					"birthOrder": 3,
-					"ownFamilyId": "ida-marie-martin"
+					"ownFamilyId": "mikkel-mathilde"
 				}
 			]
 		},
@@ -1075,7 +1123,17 @@
 			"id": "rene-christina",
 			"person1Id": "rene",
 			"person2Id": "christina",
-			"relationshipType": "married"
+			"relationshipType": "married",
+			"children": [
+				{
+					"personId": "frida-2",
+					"birthOrder": 1
+				},
+				{
+					"personId": "flora",
+					"birthOrder": 2
+				}
+			]
 		},
 		{
 			"id": "mads-mette",
@@ -1346,7 +1404,25 @@
 			"id": "michael-sofie",
 			"person1Id": "michael",
 			"person2Id": "sofie",
-			"relationshipType": "married"
+			"relationshipType": "married",
+			"children": [
+				{
+					"personId": "oswald",
+					"birthOrder": 1
+				},
+				{
+					"personId": "yrsa-2",
+					"birthOrder": 2
+				},
+				{
+					"personId": "lilly",
+					"birthOrder": 3
+				},
+				{
+					"personId": "lydia",
+					"birthOrder": 4
+				}
+			]
 		},
 		{
 			"id": "emil-maria",
