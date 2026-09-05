@@ -585,7 +585,7 @@
 			"lastName": "Thomsen",
 			"gender": "male",
 			"dob": "8/27/2017",
-			"age": 7
+			"age": 9
 		},
 		{
 			"id": "buster",
@@ -593,7 +593,39 @@
 			"lastName": "Thomsen",
 			"gender": "male",
 			"dob": "5/28/2021",
-			"age": 3
+			"age": 5
+		},
+		{
+			"id": "vildfred",
+			"firstName": "Vildfred",
+			"lastName": "Hansen",
+			"gender": "male",
+			"dob": "2/2/2015",
+			"age": 11
+		},
+		{
+			"id": "alvilda",
+			"firstName": "Alvilda",
+			"lastName": "Hansen",
+			"gender": "female",
+			"dob": "10/7/2018",
+			"age": 7
+		},
+		{
+			"id": "frida",
+			"firstName": "Frida",
+			"lastName": "Hansen",
+			"gender": "female",
+			"dob": "1/6/2022",
+			"age": 4
+		},
+		{
+			"id": "vester",
+			"firstName": "Vester",
+			"lastName": "Andersen",
+			"gender": "male",
+			"dob": "11/15/2025",
+			"age": 0
 		}
 	],
 	"couples": [
@@ -885,6 +917,10 @@
 				{
 					"personId": "ole",
 					"birthOrder": 1
+				},
+				{
+					"personId": "vester",
+					"birthOrder": 2
 				}
 			]
 		},
@@ -944,7 +980,17 @@
 			"id": "sidsel-jon",
 			"person1Id": "sidsel",
 			"person2Id": "jon",
-			"relationshipType": "married"
+			"relationshipType": "married",
+			"children": [
+				{
+					"personId": "vildfred",
+					"birthOrder": 1
+				},
+				{
+					"personId": "alvilda",
+					"birthOrder": 2
+				}
+			]
 		},
 		{
 			"id": "signe-kasper",
@@ -956,7 +1002,13 @@
 			"id": "bjorn-anne",
 			"person1Id": "bjorn",
 			"person2Id": "anne",
-			"relationshipType": "married"
+			"relationshipType": "married",
+			"children": [
+				{
+					"personId": "frida",
+					"birthOrder": 1
+				}
+			]
 		},
 		{
 			"id": "niels-ingvild",
