@@ -546,6 +546,38 @@
 			"age": 27,
 			"gender": "male",
 			"dob": "2/5/1997"
+		},
+		{
+			"id": "jan",
+			"firstName": "Jan",
+			"lastName": "Paulsen",
+			"gender": "male",
+			"dob": "1/1/1964",
+			"age": 60
+		},
+		{
+			"id": "anne-lisbeth",
+			"firstName": "Anne-Lisbeth",
+			"lastName": "Paulsen",
+			"gender": "female",
+			"dob": "1/1/1964",
+			"age": 60
+		},
+		{
+			"id": "michael",
+			"firstName": "Michael",
+			"lastName": "Nielsen",
+			"gender": "male",
+			"dob": "11/1/1970",
+			"age": 54
+		},
+		{
+			"id": "sofie",
+			"firstName": "Sofie",
+			"lastName": "Nielsen",
+			"gender": "female",
+			"dob": "11/1/1970",
+			"age": 54
 		}
 	],
 	"couples": [
@@ -614,18 +646,23 @@
 			"relationshipType": "married",
 			"children": [
 				{
-					"personId": "bo",
+					"personId": "jan",
 					"birthOrder": 1,
+					"ownFamilyId": "jan-anne-lisbeth"
+				},
+				{
+					"personId": "bo",
+					"birthOrder": 2,
 					"ownFamilyId": "bo-akannguaq"
 				},
 				{
 					"personId": "peter",
-					"birthOrder": 2,
+					"birthOrder": 3,
 					"ownFamilyId": "peter-camilla"
 				},
 				{
 					"personId": "helle",
-					"birthOrder": 3,
+					"birthOrder": 4,
 					"ownFamilyId": "helle-preben"
 				}
 			]
@@ -663,6 +700,11 @@
 					"personId": "rene",
 					"birthOrder": 1,
 					"ownFamilyId": "rene-christina"
+				},
+				{
+					"personId": "michael",
+					"birthOrder": 2,
+					"ownFamilyId": "michael-sofie"
 				}
 			]
 		},
@@ -925,6 +967,25 @@
 					"birthOrder": 1
 				}
 			]
+		},
+		{
+			"id": "jan-anne-lisbeth",
+			"person1Id": "jan",
+			"person2Id": "anne-lisbeth",
+			"relationshipType": "married",
+			"children": [
+				{
+					"personId": "ninna",
+					"birthOrder": 1,
+					"ownFamilyId": "ninna-jesper"
+				}
+			]
+		},
+		{
+			"id": "michael-sofie",
+			"person1Id": "michael",
+			"person2Id": "sofie",
+			"relationshipType": "married"
 		}
 	]
 }
