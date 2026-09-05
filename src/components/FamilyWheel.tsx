@@ -406,6 +406,13 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
     labelSelRef.current = labelsSel;
     sublabelSelRef.current = sublabelsSel;
 
+    // The radius a node must keep: the length of its layout position, which is
+    // birthYearToRadius by construction. Tree is not radial and the sequence is
+    // a pinned grid, so neither is locked.
+    const radialLayout = layoutMode === "wheel" || layoutMode === "branchSize";
+    const targetRadius = new Map<string, number>();
+    for (const [id, pos] of positions) targetRadius.set(id, Math.hypot(pos.x, pos.y));
+
     // Force simulation
     const simulation = d3
       .forceSimulation<WheelNode>(nodes)
@@ -427,6 +434,28 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
       )
       .alphaDecay(0.02)
       .on("tick", () => {
+        // In the radial layouts the distance from the centre *is* the birth
+        // year, so collision must slide crowded nodes along their ring rather
+        // than off it. Without this the decade rings quietly stop meaning
+        // anything — a 1944 couple drifts out to where 1948 should be.
+        if (radialLayout) {
+          for (const node of nodes) {
+            const target = targetRadius.get(node.coupleId);
+            if (target === undefined || node.x === undefined || node.y === undefined) continue;
+            const dx = node.x - cx;
+            const dy = node.y - cy;
+            const current = Math.hypot(dx, dy);
+            if (target < 0.5) {
+              node.x = cx;
+              node.y = cy;
+            } else if (current > 0.001) {
+              const k = target / current;
+              node.x = cx + dx * k;
+              node.y = cy + dy * k;
+            }
+          }
+        }
+
         linkSel
           .attr("x1", (d) => {
             const src = nodes.find((n) => n.coupleId === (typeof d.source === "string" ? d.source : (d.source as WheelNode).coupleId));
