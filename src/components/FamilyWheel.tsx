@@ -4,7 +4,7 @@ import type { FamilyData } from "@/types/simple-family";
 import { buildWheelGraph, type WheelNode, type WheelLink } from "@/lib/wheel-graph";
 import {
   computeWheelLayout,
-  computeBirthOrderLayout,
+  computeSequenceLayout,
   computeBranchSizeLayout,
   computeTreeLayout,
   computeBaselinePositions,
@@ -18,8 +18,13 @@ import PasswordModal from "./PasswordModal";
 import EditPanel from "./EditPanel";
 import SyncBadge from "./SyncBadge";
 
-const GEN_COLORS = ["#f59e0b", "#3b82f6", "#10b981", "#8b5cf6"];
-const GEN_RADII = [22, 15, 12, 10];
+// d3.forceLink().id() rewrites link.source/target from ids into node objects,
+// so anything reading them after the simulation starts must accept both.
+const endpointId = (end: string | WheelNode): string =>
+  typeof end === "string" ? end : end.coupleId;
+
+const GEN_COLORS = ["#f59e0b", "#3b82f6", "#10b981", "#8b5cf6", "#ec4899"];
+const GEN_RADII = [22, 15, 12, 10, 9];
 
 type LayoutMode = "wheel" | "birthOrder" | "branchSize" | "tree";
 
@@ -57,7 +62,7 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
       const rootBirthYear = nodes.find((n) => n.generation === 0)?.birthYear ?? 1919;
       switch (layoutMode) {
         case "birthOrder":
-          return computeBirthOrderLayout(nodes, rootBirthYear, width, height);
+          return computeSequenceLayout(nodes, rootBirthYear, width, height);
         case "branchSize":
           return computeBranchSizeLayout(nodes, rootBirthYear, width, height);
         case "tree":
@@ -70,6 +75,14 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
   );
 
   const zoomTransformRef = useRef<{ k: number; x: number; y: number }>({ k: 1, x: 0, y: 0 });
+  // restoredState stays set for the component's life, but a shared view is only
+  // restored once — after that the layout buttons own the layout.
+  const hasRestoredRef = useRef(false);
+  // Clicking a node pins the relatives highlight; hovering previews it.
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const selectedIdRef = useRef<string | null>(null);
+  selectedIdRef.current = selectedId;
+  const highlightRef = useRef<((focusId: string | null) => void) | null>(null);
 
   const viewStateConfig: ViewStateConfig<{ layout: string; labels: boolean; rings: boolean }> = {
     baseline: () => {
@@ -137,8 +150,11 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
     // Compute target positions
     const positions = getLayout(nodes, width, height);
 
+    const isRestoring = restoredState !== null && !hasRestoredRef.current;
+
     // If restoring from URL, apply settings and pin nodes to restored positions
-    if (restoredState) {
+    if (isRestoring) {
+      hasRestoredRef.current = true;
       viewStateConfig.applySettings(restoredState.settings as { layout: string; labels: boolean; rings: boolean });
       zoomTransformRef.current = restoredState.camera;
 
@@ -186,7 +202,7 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
     sel.call(zoom);
 
     // If restoring from shared URL, apply the saved camera transform
-    if (restoredState) {
+    if (isRestoring) {
       const cam = zoomTransformRef.current;
       const initialTransform = d3.zoomIdentity.translate(cam.x, cam.y).scale(cam.k);
       sel.call(zoom.transform, initialTransform);
@@ -205,7 +221,8 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
       decades.push(d);
     }
 
-    const ringsGroup = g.append("g").attr("class", "rings").attr("display", showRings ? null : "none");
+    const ringsInThisLayout = showRings && layoutMode !== "birthOrder";
+    const ringsGroup = g.append("g").attr("class", "rings").attr("display", ringsInThisLayout ? null : "none");
     ringsGroupRef.current = ringsGroup;
     for (const decade of decades) {
       const r = (decade - rootBirthYear) * scale;
@@ -234,7 +251,7 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
       .data(links)
       .join("line")
       .attr("stroke", (d) => {
-        const sourceNode = nodes.find((n) => n.coupleId === d.source);
+        const sourceNode = nodes.find((n) => n.coupleId === endpointId(d.source));
         return GEN_COLORS[Math.min(sourceNode?.generation ?? 0, GEN_COLORS.length - 1)];
       })
       .attr("stroke-width", 1.2)
@@ -248,28 +265,22 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
       .join("g")
       .attr("cursor", "grab")
       .on("mouseenter", (_event, d) => {
-        // Highlight connections
-        nodeSel.attr("opacity", (n) => {
-          if (n.coupleId === d.coupleId) return 1;
-          if (n.parentCoupleId === d.coupleId) return 1;
-          if (d.parentCoupleId === n.coupleId) return 1;
-          return 0.2;
-        });
-        linkSel.attr("opacity", (l) => {
-          if (l.source === d.coupleId || l.target === d.coupleId) return 0.6;
-          return 0.05;
-        });
+        highlightRef.current?.(d.coupleId);
       })
       .on("mousemove", (event, d) => {
         const [mx, my] = d3.pointer(event, svg);
         setHoveredNode({ node: d, mouseX: mx, mouseY: my });
       })
       .on("mouseleave", () => {
-        nodeSel.attr("opacity", 1);
-        linkSel.attr("opacity", 0.25);
+        highlightRef.current?.(selectedIdRef.current);
         setHoveredNode(null);
       })
       .on("click", (event, d) => {
+        if (!editMode) {
+          event.stopPropagation();
+          setSelectedId((prev) => (prev === d.coupleId ? null : d.coupleId));
+          return;
+        }
         if (editMode) {
           event.stopPropagation();
           const [mx, my] = d3.pointer(event, svg);
@@ -360,7 +371,7 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
       });
 
     // If restoring from shared URL, freeze the simulation — nodes are already pinned
-    if (restoredState) {
+    if (isRestoring) {
       simulation.alpha(0);
     }
 
@@ -383,9 +394,39 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
         updateURL();
       });
 
+    // Single source of truth for dimming, shared by hover and click.
+    // In sequence mode the branch lines are noise, so they only appear for a focused node.
+    const linksAlwaysVisible = layoutMode !== "birthOrder";
+    const applyHighlight = (focusId: string | null) => {
+      if (focusId === null) {
+        nodeSel.attr("opacity", 1);
+        linkSel.attr("opacity", linksAlwaysVisible ? 0.25 : 0);
+        return;
+      }
+      const focus = nodes.find((n) => n.coupleId === focusId);
+      nodeSel.attr("opacity", (n) => {
+        if (n.coupleId === focusId) return 1;
+        if (n.parentCoupleId === focusId) return 1;
+        if (focus?.parentCoupleId === n.coupleId) return 1;
+        return 0.15;
+      });
+      linkSel.attr("opacity", (l) =>
+        endpointId(l.source) === focusId || endpointId(l.target) === focusId
+          ? 0.8
+          : linksAlwaysVisible
+            ? 0.05
+            : 0,
+      );
+    };
+    highlightRef.current = applyHighlight;
+    applyHighlight(selectedIdRef.current);
+
     nodeSel.call(drag);
 
-    sel.on("click", () => setEditNode(null));
+    sel.on("click", () => {
+      setEditNode(null);
+      setSelectedId(null);
+    });
 
     return () => {
       simulation.stop();
@@ -400,8 +441,8 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
   }, [showLabels]);
 
   useEffect(() => {
-    ringsGroupRef.current?.attr("display", showRings ? null : "none");
-  }, [showRings]);
+    ringsGroupRef.current?.attr("display", showRings && layoutMode !== "birthOrder" ? null : "none");
+  }, [showRings, layoutMode]);
 
   useEffect(() => {
     updateURL();
@@ -437,6 +478,10 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
       );
     sim.alpha(0.8).restart();
   }, [layoutMode, getLayout]);
+
+  useEffect(() => {
+    highlightRef.current?.(selectedId);
+  }, [selectedId]);
 
   useEffect(() => {
     graphRef.current = null;
@@ -526,7 +571,7 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
                 : "bg-[#1e2030] border-[#2a2d3e] text-gray-400 hover:bg-[#2a2d3e] hover:text-white"
             }`}
           >
-            {mode === "wheel" ? "Hjul" : mode === "birthOrder" ? "Fodselsdato" : mode === "branchSize" ? "Grenstorrelse" : "Trae"}
+            {mode === "wheel" ? "Hjul" : mode === "birthOrder" ? "Rækkefølge" : mode === "branchSize" ? "Grenstørrelse" : "Træ"}
           </button>
         ))}
         <button
@@ -547,7 +592,7 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
               : "bg-[#1e2030] border-[#2a2d3e] text-gray-400 hover:bg-[#2a2d3e] hover:text-white"
           }`}
         >
-          Rings
+          Ringe
         </button>
         <button
           onClick={async () => {
@@ -563,7 +608,7 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
 
       {/* Legend */}
       <div className="absolute bottom-5 left-5 z-10 flex gap-4 text-sm">
-        {["Stampar", "Born", "Borneborn", "Oldeborn+"].map((label, i) => (
+        {["Stampar", "Børn", "Børnebørn", "Oldebørn", "Tipoldebørn+"].map((label, i) => (
           <div key={label} className="flex items-center gap-1.5">
             <div
               className="w-2.5 h-2.5 rounded-full"
@@ -599,7 +644,7 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
           <div className="text-gray-500 text-xs mt-1">
             Generation {hoveredNode.node.generation}
             {hoveredNode.node.childCount > 0
-              ? ` · ${hoveredNode.node.childCount} ${hoveredNode.node.childCount === 1 ? "barn" : "born"}`
+              ? ` · ${hoveredNode.node.childCount} ${hoveredNode.node.childCount === 1 ? "barn" : "børn"}`
               : ""}
           </div>
           {hoveredNode.node.isSingle && (

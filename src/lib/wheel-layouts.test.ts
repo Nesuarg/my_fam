@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { computeWheelLayout, computeBirthOrderLayout, computeBranchSizeLayout, computeTreeLayout } from "./wheel-layouts";
+import { computeWheelLayout, computeSequenceLayout, computeBranchSizeLayout, computeTreeLayout } from "./wheel-layouts";
 import type { WheelNode } from "./wheel-graph";
 
 function makeNode(overrides: Partial<WheelNode>): WheelNode {
@@ -55,16 +55,57 @@ describe("computeWheelLayout", () => {
   });
 });
 
-describe("computeBirthOrderLayout", () => {
-  it("re-sorts angular positions by birth order", () => {
-    const root = makeNode({ coupleId: "root", generation: 0, birthYear: 1919, childCount: 2 });
-    const c1 = makeNode({ coupleId: "c1", generation: 1, birthYear: 1950, birthOrder: 2, parentCoupleId: "root" });
-    const c2 = makeNode({ coupleId: "c2", generation: 1, birthYear: 1945, birthOrder: 1, parentCoupleId: "root" });
-    const positions = computeBirthOrderLayout([root, c1, c2], 1919, 800, 800);
+describe("computeSequenceLayout", () => {
+  const person = (dob: string) => ({
+    id: "p", firstName: "A", lastName: "B", age: 50, gender: "male" as const, dob,
+  });
 
-    const angle1 = Math.atan2(positions.get("c1")!.y, positions.get("c1")!.x);
-    const angle2 = Math.atan2(positions.get("c2")!.y, positions.get("c2")!.x);
-    expect(angle2).toBeLessThan(angle1);
+  it("orders by the older half of a couple, not by the first-listed person", () => {
+    const root = makeNode({ coupleId: "root", generation: 0, birthYear: 1919 });
+    // "young" is listed first at 1960 but is married to someone born 1940.
+    const young = makeNode({
+      coupleId: "young", generation: 1, birthYear: 1960, parentCoupleId: "root",
+      fabriciusPerson: person("1/1/1960"), partnerPerson: person("1/1/1940"),
+    });
+    const mid = makeNode({
+      coupleId: "mid", generation: 1, birthYear: 1950, parentCoupleId: "root",
+      fabriciusPerson: person("1/1/1950"), partnerPerson: null,
+    });
+
+    const positions = computeSequenceLayout([root, young, mid], 1919, 2000, 800);
+
+    // young's couple is anchored at 1940, so it precedes mid (1950).
+    expect(positions.get("young")!.x).toBeLessThan(positions.get("mid")!.x);
+  });
+
+  it("reads left to right, then wraps to the next row", () => {
+    const nodes = [
+      makeNode({ coupleId: "root", generation: 0, birthYear: 1919, fabriciusPerson: person("1/1/1919") }),
+      makeNode({ coupleId: "a", generation: 1, birthYear: 1940, parentCoupleId: "root", fabriciusPerson: person("1/1/1940") }),
+      makeNode({ coupleId: "b", generation: 1, birthYear: 1950, parentCoupleId: "root", fabriciusPerson: person("1/1/1950") }),
+      makeNode({ coupleId: "c", generation: 1, birthYear: 1960, parentCoupleId: "root", fabriciusPerson: person("1/1/1960") }),
+    ];
+    // Narrow enough that only two columns fit.
+    const positions = computeSequenceLayout(nodes, 1919, 520, 800);
+
+    const root = positions.get("root")!;
+    const a = positions.get("a")!;
+    const b = positions.get("b")!;
+
+    expect(a.x).toBeGreaterThan(root.x);   // same row, further right
+    expect(a.y).toBe(root.y);
+    expect(b.y).toBeGreaterThan(a.y);      // wrapped to the next row
+    expect(b.x).toBe(root.x);              // back to the first column
+  });
+
+  it("gives every node a distinct slot", () => {
+    const nodes = Array.from({ length: 12 }, (_, i) =>
+      makeNode({ coupleId: `n${i}`, generation: 1, birthYear: 1940 + i, fabriciusPerson: person(`1/1/${1940 + i}`) }),
+    );
+    const positions = computeSequenceLayout(nodes, 1919, 1200, 800);
+    const slots = new Set([...positions.values()].map((p) => `${p.x},${p.y}`));
+
+    expect(slots.size).toBe(12);
   });
 });
 

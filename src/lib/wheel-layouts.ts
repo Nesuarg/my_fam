@@ -104,13 +104,60 @@ export function computeWheelLayout(
   return positions;
 }
 
-export function computeBirthOrderLayout(
+/** Birth year of the older half of a couple — the anchor a couple sorts by. */
+function coupleBirthYear(node: WheelNode): number {
+  const years = [node.fabriciusPerson, node.partnerPerson]
+    .filter((p): p is NonNullable<typeof p> => p !== null)
+    .map((p) => {
+      const match = p.dob.match(/(\d{4})$/);
+      return match ? Number(match[1]) : null;
+    })
+    .filter((y): y is number => y !== null);
+
+  return years.length > 0 ? Math.min(...years) : node.birthYear;
+}
+
+/** Slot geometry for the sequence layout. Wide enough for a two-name label. */
+const SEQ_COL_WIDTH = 210;
+const SEQ_ROW_HEIGHT = 84;
+const SEQ_PADDING = 48;
+
+/**
+ * Lays everyone out as a reading sequence — oldest first, left to right,
+ * wrapping into rows. Couples stay on one slot, anchored to the older partner.
+ * Branch links are meaningless here; the UI reveals relatives on click instead.
+ */
+export function computeSequenceLayout(
   nodes: WheelNode[],
-  rootBirthYear: number,
+  _rootBirthYear: number,
   width: number,
   height: number,
 ): Map<string, Position> {
-  return computeWheelLayout(nodes, rootBirthYear, width, height);
+  const positions = new Map<string, Position>();
+  if (nodes.length === 0) return positions;
+
+  const ordered = [...nodes].sort(
+    (a, b) => coupleBirthYear(a) - coupleBirthYear(b) || a.coupleId.localeCompare(b.coupleId),
+  );
+
+  const usable = Math.max(width - SEQ_PADDING * 2, SEQ_COL_WIDTH);
+  const columns = Math.max(1, Math.floor(usable / SEQ_COL_WIDTH));
+  const rows = Math.ceil(ordered.length / columns);
+
+  // Centre the block so it sits in the middle of the viewport.
+  const blockWidth = Math.min(ordered.length, columns) * SEQ_COL_WIDTH;
+  const blockHeight = rows * SEQ_ROW_HEIGHT;
+  const originX = -blockWidth / 2 + SEQ_COL_WIDTH / 2;
+  const originY = -blockHeight / 2 + SEQ_ROW_HEIGHT / 2;
+
+  for (let i = 0; i < ordered.length; i++) {
+    positions.set(ordered[i].coupleId, {
+      x: originX + (i % columns) * SEQ_COL_WIDTH,
+      y: originY + Math.floor(i / columns) * SEQ_ROW_HEIGHT,
+    });
+  }
+
+  return positions;
 }
 
 export function computeBranchSizeLayout(
@@ -216,7 +263,7 @@ export function computeBaselinePositions(
   let positions: Map<string, { x: number; y: number }>;
   switch (layoutMode) {
     case "birthOrder":
-      positions = computeBirthOrderLayout(nodes, rootBirthYear, width, height);
+      positions = computeSequenceLayout(nodes, rootBirthYear, width, height);
       break;
     case "branchSize":
       positions = computeBranchSizeLayout(nodes, rootBirthYear, width, height);

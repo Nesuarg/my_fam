@@ -36,7 +36,7 @@ function PersonFields({
       <div className="text-gray-500 text-xs mb-1">{label}</div>
       <input value={fn} onChange={(e) => setFn(e.target.value)} placeholder="Fornavn" className="w-full px-2 py-1 mb-1 bg-[#0f1117] border border-[#2a2d3e] rounded text-white text-xs focus:outline-none focus:border-blue-500" />
       <input value={ln} onChange={(e) => setLn(e.target.value)} placeholder="Efternavn" className="w-full px-2 py-1 mb-1 bg-[#0f1117] border border-[#2a2d3e] rounded text-white text-xs focus:outline-none focus:border-blue-500" />
-      <input value={d} onChange={(e) => setD(e.target.value)} placeholder="Fodselsdato (M/D/ÅÅÅÅ)" className="w-full px-2 py-1 bg-[#0f1117] border border-[#2a2d3e] rounded text-white text-xs focus:outline-none focus:border-blue-500" />
+      <input value={d} onChange={(e) => setD(e.target.value)} placeholder="Fødselsdato (M/D/ÅÅÅÅ)" className="w-full px-2 py-1 bg-[#0f1117] border border-[#2a2d3e] rounded text-white text-xs focus:outline-none focus:border-blue-500" />
       {changed && (
         <button onClick={() => onSave({ firstName: fn, lastName: ln, dob: d })} className="mt-1 px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700">
           Gem
@@ -65,7 +65,7 @@ function NewPersonForm({
     <div className="mt-2 border-t border-[#2a2d3e] pt-2">
       <input value={fn} onChange={(e) => setFn(e.target.value)} placeholder="Fornavn" autoFocus className="w-full px-2 py-1 mb-1 bg-[#0f1117] border border-[#2a2d3e] rounded text-white text-xs focus:outline-none focus:border-blue-500" />
       <input value={ln} onChange={(e) => setLn(e.target.value)} placeholder="Efternavn" className="w-full px-2 py-1 mb-1 bg-[#0f1117] border border-[#2a2d3e] rounded text-white text-xs focus:outline-none focus:border-blue-500" />
-      <input value={dob} onChange={(e) => setDob(e.target.value)} placeholder="Fodselsdato (M/D/ÅÅÅÅ)" className="w-full px-2 py-1 mb-1 bg-[#0f1117] border border-[#2a2d3e] rounded text-white text-xs focus:outline-none focus:border-blue-500" />
+      <input value={dob} onChange={(e) => setDob(e.target.value)} placeholder="Fødselsdato (M/D/ÅÅÅÅ)" className="w-full px-2 py-1 mb-1 bg-[#0f1117] border border-[#2a2d3e] rounded text-white text-xs focus:outline-none focus:border-blue-500" />
       <div className="flex gap-2 mb-1">
         <button onClick={() => setGender("male")} className={`px-2 py-1 text-xs rounded ${gender === "male" ? "bg-blue-600 text-white" : "bg-[#2a2d3e] text-gray-400"}`}>M</button>
         <button onClick={() => setGender("female")} className={`px-2 py-1 text-xs rounded ${gender === "female" ? "bg-pink-600 text-white" : "bg-[#2a2d3e] text-gray-400"}`}>F</button>
