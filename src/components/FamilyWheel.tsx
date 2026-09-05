@@ -647,7 +647,7 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
         )}
         <button
           onClick={handleEditToggle}
-          className={`mt-2 px-3 py-1.5 rounded-md text-xs border transition-colors ${
+          className={`mt-2 rounded-md border transition-colors ${projector ? "px-5 py-2.5 text-base" : "px-3 py-1.5 text-xs"} ${
             editMode
               ? "bg-green-600 border-green-600 text-white"
               : "bg-[#1e2030] border-[#2a2d3e] text-gray-400 hover:bg-[#2a2d3e] hover:text-white"
@@ -771,6 +771,7 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
           onAddChild={handleAddChild}
           onAddCouple={handleAddCouple}
           onClose={() => setEditNode(null)}
+          large={projector}
         />
       )}
 
