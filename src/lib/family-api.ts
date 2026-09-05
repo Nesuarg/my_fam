@@ -29,7 +29,7 @@ interface ApiError {
 type ApiResponse = ApiSuccess | ApiError;
 
 async function callApi(password: string, body: Record<string, unknown>): Promise<ApiResponse> {
-  const res = await fetch("/.netlify/functions/edit-family", {
+  const res = await fetch("/api/edit-family", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -41,7 +41,7 @@ async function callApi(password: string, body: Record<string, unknown>): Promise
 }
 
 export async function validatePassword(password: string): Promise<boolean> {
-  const res = await fetch("/.netlify/functions/edit-family", {
+  const res = await fetch("/api/edit-family", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -94,7 +94,7 @@ export async function askAssistant(
   password: string,
   turns: { role: "user" | "assistant"; content: string }[],
 ): Promise<{ ok: true; reply: AssistantReply } | { ok: false; message: string }> {
-  const res = await fetch("/.netlify/functions/family-assistant", {
+  const res = await fetch("/api/family-assistant", {
     method: "POST",
     headers: { "Content-Type": "application/json", "X-Family-Password": password },
     body: JSON.stringify({ turns }),
