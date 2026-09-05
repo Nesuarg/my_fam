@@ -626,6 +626,62 @@
 			"gender": "male",
 			"dob": "11/15/2025",
 			"age": 0
+		},
+		{
+			"id": "gorm",
+			"firstName": "Gorm",
+			"lastName": "Rasmussen",
+			"gender": "male",
+			"dob": "12/15/2011",
+			"age": 14
+		},
+		{
+			"id": "dagmar",
+			"firstName": "Dagmar",
+			"lastName": "Rasmussen",
+			"gender": "female",
+			"dob": "7/30/2014",
+			"age": 12
+		},
+		{
+			"id": "ingrid",
+			"firstName": "Ingrid",
+			"lastName": "Rasmussen",
+			"gender": "female",
+			"dob": "11/18/2023",
+			"age": 2
+		},
+		{
+			"id": "rita-2",
+			"firstName": "Rita",
+			"lastName": "Eriksen",
+			"gender": "female",
+			"dob": "5/25/2021",
+			"age": 5
+		},
+		{
+			"id": "bosse",
+			"firstName": "Bosse",
+			"lastName": "Eriksen",
+			"gender": "male",
+			"dob": "10/9/2025",
+			"age": 0
+		},
+		{
+			"id": "bille",
+			"firstName": "Bille",
+			"lastName": "Carlsen",
+			"gender": "female",
+			"dob": "1/31/2022",
+			"age": 4
+		},
+		{
+			"id": "yrsa",
+			"firstName": "Yrsa",
+			"lastName": "Carlsen",
+			"gender": "female",
+			"dob": "6/27/2024",
+			"age": 2
 		}
 	],
 	"couples": [
@@ -704,14 +760,14 @@
 					"ownFamilyId": "bo-akannguaq"
 				},
 				{
-					"personId": "peter",
+					"personId": "helle",
 					"birthOrder": 3,
-					"ownFamilyId": "peter-camilla"
+					"ownFamilyId": "helle-preben"
 				},
 				{
-					"personId": "helle",
+					"personId": "peter",
 					"birthOrder": 4,
-					"ownFamilyId": "helle-preben"
+					"ownFamilyId": "peter-camilla"
 				}
 			]
 		},
@@ -780,19 +836,19 @@
 			"relationshipType": "married",
 			"children": [
 				{
-					"personId": "sidsel",
+					"personId": "bjorn",
 					"birthOrder": 1,
+					"ownFamilyId": "bjorn-anne"
+				},
+				{
+					"personId": "sidsel",
+					"birthOrder": 2,
 					"ownFamilyId": "sidsel-jon"
 				},
 				{
 					"personId": "signe",
-					"birthOrder": 2,
-					"ownFamilyId": "signe-kasper"
-				},
-				{
-					"personId": "bjorn",
 					"birthOrder": 3,
-					"ownFamilyId": "bjorn-anne"
+					"ownFamilyId": "signe-kasper"
 				}
 			]
 		},
@@ -962,19 +1018,53 @@
 			"id": "kamille-christian",
 			"person1Id": "kamille",
 			"person2Id": "christian-kamille-spouse",
-			"relationshipType": "married"
+			"relationshipType": "married",
+			"children": [
+				{
+					"personId": "rita-2",
+					"birthOrder": 1
+				},
+				{
+					"personId": "bosse",
+					"birthOrder": 2
+				}
+			]
 		},
 		{
 			"id": "mikkel-mathilde",
 			"person1Id": "mikkel-asbjorn",
 			"person2Id": "mathilde",
-			"relationshipType": "married"
+			"relationshipType": "married",
+			"children": [
+				{
+					"personId": "bille",
+					"birthOrder": 1
+				},
+				{
+					"personId": "yrsa",
+					"birthOrder": 2
+				}
+			]
 		},
 		{
 			"id": "ida-marie-martin",
 			"person1Id": "ida-marie",
 			"person2Id": "martin",
-			"relationshipType": "married"
+			"relationshipType": "married",
+			"children": [
+				{
+					"personId": "gorm",
+					"birthOrder": 1
+				},
+				{
+					"personId": "dagmar",
+					"birthOrder": 2
+				},
+				{
+					"personId": "ingrid",
+					"birthOrder": 3
+				}
+			]
 		},
 		{
 			"id": "sidsel-jon",
