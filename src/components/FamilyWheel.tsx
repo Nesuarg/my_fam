@@ -105,6 +105,8 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
   const revealRef = useRef<((year: number | null) => void) | null>(null);
   const playYearRef = useRef<number | null>(null);
   playYearRef.current = playYear;
+  /** How many nodes appear in each year, so playback can linger on busy ones. */
+  const birthsByYearRef = useRef<Map<number, number>>(new Map());
 
   const viewStateConfig: ViewStateConfig<{ layout: string; labels: boolean; rings: boolean }> = {
     baseline: () => {
@@ -563,6 +565,10 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
     revealRef.current = applyYear;
     applyYear(playYearRef.current);
 
+    const births = new Map<number, number>();
+    for (const node of nodes) births.set(node.birthYear, (births.get(node.birthYear) ?? 0) + 1);
+    birthsByYearRef.current = births;
+
     nodeSel.call(drag);
 
     sel.on("click", () => {
@@ -646,13 +652,29 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
 
   useEffect(() => {
     if (!playing) return;
-    const id = setInterval(() => {
-      setPlayYear((prev) => {
-        const next = (prev ?? firstYear) + 1;
-        return next > lastYear ? firstYear : next;
-      });
-    }, 1000 / yearsPerSecond);
-    return () => clearInterval(id);
+    let timer: ReturnType<typeof setTimeout>;
+
+    // The speed setting is the pace through empty years. A year where several
+    // people are born holds longer, so the eye has time to catch them — the
+    // quiet stretches are what you want to skip, not the busy ones.
+    const holdFor = (year: number) => {
+      const base = 1000 / yearsPerSecond;
+      const born = birthsByYearRef.current.get(year) ?? 0;
+      return Math.min(base * (1 + born * 0.9), 2200);
+    };
+
+    // The next year is derived from the ref, not from a state updater: React
+    // may run an updater more than once, and scheduling the next tick inside
+    // one starts a timer per call that nothing clears.
+    const step = () => {
+      const prev = playYearRef.current ?? firstYear - 1;
+      const year = prev + 1 > lastYear ? firstYear : prev + 1;
+      playYearRef.current = year;
+      setPlayYear(year);
+      timer = setTimeout(step, holdFor(year));
+    };
+    timer = setTimeout(step, 0);
+    return () => clearTimeout(timer);
   }, [playing, yearsPerSecond, firstYear, lastYear]);
 
   useEffect(() => {
@@ -836,8 +858,10 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
 
       {/* Timeline playback */}
       <div
-        className={`absolute z-10 flex items-center gap-3 rounded-lg border border-[#2a2d3e] bg-[#1e2030]/95 px-4 py-2.5 ${
-          projector ? "bottom-20 left-1/2 -translate-x-1/2" : "bottom-5 left-1/2 -translate-x-1/2"
+        // Bottom right: the wheel is round, so the corners are the only place a
+        // wide bar does not sit on top of somebody.
+        className={`absolute bottom-5 right-5 z-10 flex items-center gap-3 rounded-lg border border-[#2a2d3e] bg-[#1e2030]/95 ${
+          projector ? "px-5 py-3" : "px-4 py-2.5"
         }`}
       >
         <button
@@ -867,7 +891,7 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
             setPlaying(false);
             setPlayYear(Number(e.target.value));
           }}
-          className={projector ? "w-96" : "w-56"}
+          className={projector ? "w-72" : "w-40"}
         />
 
         <div className="flex gap-1">
