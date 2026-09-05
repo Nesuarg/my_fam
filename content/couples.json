@@ -682,6 +682,30 @@
 			"gender": "female",
 			"dob": "6/27/2024",
 			"age": 2
+		},
+		{
+			"id": "olau",
+			"firstName": "Olau",
+			"lastName": "Johannesen",
+			"gender": "male",
+			"dob": "1/21/2007",
+			"age": 19
+		},
+		{
+			"id": "carolina",
+			"firstName": "Carolina",
+			"lastName": "Johannesen",
+			"gender": "female",
+			"dob": "5/14/2009",
+			"age": 17
+		},
+		{
+			"id": "teo",
+			"firstName": "Teo",
+			"lastName": "Johannesen",
+			"gender": "male",
+			"dob": "2/25/2012",
+			"age": 14
 		}
 	],
 	"couples": [
@@ -1110,7 +1134,21 @@
 			"id": "hans-marta",
 			"person1Id": "hans",
 			"person2Id": "marta",
-			"relationshipType": "married"
+			"relationshipType": "married",
+			"children": [
+				{
+					"personId": "olau",
+					"birthOrder": 1
+				},
+				{
+					"personId": "carolina",
+					"birthOrder": 2
+				},
+				{
+					"personId": "teo",
+					"birthOrder": 3
+				}
+			]
 		},
 		{
 			"id": "mette-christian",
