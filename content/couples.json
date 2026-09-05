@@ -273,7 +273,7 @@
 		{
 			"id": "ingvild",
 			"firstName": "Ingvild",
-			"lastName": "Fabricius Hansen",
+			"lastName": "Starheim",
 			"maidenName": "Berg",
 			"age": 45,
 			"gender": "female",
@@ -734,7 +734,7 @@
 		{
 			"id": "jesper-2",
 			"firstName": "Jesper",
-			"lastName": "Fabricius Hansen",
+			"lastName": "Fabricius Starheim",
 			"gender": "male",
 			"dob": "11/5/2008",
 			"age": 17
@@ -742,7 +742,7 @@
 		{
 			"id": "ida",
 			"firstName": "Ida",
-			"lastName": "Fabricius Hansen",
+			"lastName": "Fabricius Starheim",
 			"gender": "female",
 			"dob": "8/14/2010",
 			"age": 16
