@@ -946,6 +946,14 @@
 			"gender": "male",
 			"dob": "8/27/2001",
 			"age": 25
+		},
+		{
+			"id": "lilje",
+			"firstName": "Lilje",
+			"lastName": "Paulsen",
+			"gender": "female",
+			"dob": "4/8/2023",
+			"age": 3
 		}
 	],
 	"couples": [
@@ -1580,8 +1588,12 @@
 			"relationshipType": "married",
 			"children": [
 				{
-					"personId": "anemone",
+					"personId": "lilje",
 					"birthOrder": 1
+				},
+				{
+					"personId": "anemone",
+					"birthOrder": 2
 				}
 			]
 		},
