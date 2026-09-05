@@ -794,6 +794,14 @@
 			"gender": "male",
 			"dob": "11/2/2018",
 			"age": 7
+		},
+		{
+			"id": "dagmar-2",
+			"firstName": "Dagmar",
+			"lastName": "Paulsen",
+			"gender": "female",
+			"dob": "6/15/2010",
+			"age": 16
 		}
 	],
 	"couples": [
@@ -1122,8 +1130,12 @@
 			"relationshipType": "married",
 			"children": [
 				{
-					"personId": "herman",
+					"personId": "dagmar-2",
 					"birthOrder": 1
+				},
+				{
+					"personId": "herman",
+					"birthOrder": 2
 				}
 			]
 		},
