@@ -730,6 +730,22 @@
 			"gender": "male",
 			"dob": "7/1/2010",
 			"age": 16
+		},
+		{
+			"id": "jesper-2",
+			"firstName": "Jesper",
+			"lastName": "Johannesen",
+			"gender": "male",
+			"dob": "11/5/2008",
+			"age": 17
+		},
+		{
+			"id": "ida",
+			"firstName": "Ida",
+			"lastName": "Johannesen",
+			"gender": "female",
+			"dob": "8/14/2010",
+			"age": 16
 		}
 	],
 	"couples": [
@@ -1152,7 +1168,17 @@
 			"id": "niels-ingvild",
 			"person1Id": "niels-johannes-son",
 			"person2Id": "ingvild",
-			"relationshipType": "married"
+			"relationshipType": "married",
+			"children": [
+				{
+					"personId": "jesper-2",
+					"birthOrder": 1
+				},
+				{
+					"personId": "ida",
+					"birthOrder": 2
+				}
+			]
 		},
 		{
 			"id": "hans-marta",
