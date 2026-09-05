@@ -60,12 +60,18 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
   const [editNode, setEditNode] = useState<{ node: WheelNode; x: number; y: number } | null>(null);
   const [syncTimestamp, setSyncTimestamp] = useState<number | null>(null);
 
+  const [projector, setProjector] = useState(
+    () => typeof window !== "undefined" && new URLSearchParams(window.location.search).has("projektor"),
+  );
+  const projectorRef = useRef(projector);
+  projectorRef.current = projector;
+  const spacingScale = projector ? 1.4 : 1;
   const getLayout = useCallback(
     (nodes: WheelNode[], width: number, height: number) => {
       const rootBirthYear = nodes.find((n) => n.generation === 0)?.birthYear ?? 1919;
       switch (layoutMode) {
         case "birthOrder":
-          return computeSequenceLayout(nodes, rootBirthYear, width, height);
+          return computeSequenceLayout(nodes, rootBirthYear, width, height, spacingScale);
         case "branchSize":
           return computeBranchSizeLayout(nodes, rootBirthYear, width, height);
         case "tree":
@@ -74,7 +80,7 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
           return computeWheelLayout(nodes, rootBirthYear, width, height);
       }
     },
-    [layoutMode],
+    [layoutMode, spacingScale],
   );
 
   const zoomTransformRef = useRef<{ k: number; x: number; y: number }>({ k: 1, x: 0, y: 0 });
@@ -86,6 +92,8 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
   const selectedIdRef = useRef<string | null>(null);
   selectedIdRef.current = selectedId;
   const highlightRef = useRef<((focusId: string | null) => void) | null>(null);
+  const zoomRef = useRef<d3.ZoomBehavior<SVGSVGElement, unknown> | null>(null);
+  const fitRef = useRef<(() => void) | null>(null);
 
   const viewStateConfig: ViewStateConfig<{ layout: string; labels: boolean; rings: boolean }> = {
     baseline: () => {
@@ -153,6 +161,13 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
     // Compute target positions
     const positions = getLayout(nodes, width, height);
 
+    // A projector is read from across a room: bigger type, fatter dots, and
+    // first names only so a two-name label still fits its column.
+    const textScale = projector ? 1.9 : 1;
+    const nodeScale = projector ? 1.4 : 1;
+    const radiusOf = (d: WheelNode) =>
+      GEN_RADII[Math.min(d.generation, GEN_RADII.length - 1)] * nodeScale;
+
     const isRestoring = restoredState !== null && !hasRestoredRef.current;
 
     // If restoring from URL, apply settings and pin nodes to restored positions
@@ -199,10 +214,31 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
         zoomTransformRef.current = { k: event.transform.k, x: event.transform.x, y: event.transform.y };
         // Only counter-scale node labels, not ring labels
         g.selectAll<SVGTextElement, unknown>(".node-label, .node-sublabel")
-          .attr("transform", `scale(${1 / k})`);
+          .attr("transform", projectorRef.current ? null : `scale(${1 / k})`);
         updateURL();
       });
     sel.call(zoom);
+    zoomRef.current = zoom;
+
+    // Scale the drawing so all of it fills the screen — the point of a projector.
+    fitRef.current = () => {
+      const bounds = g.node()?.getBBox();
+      if (!bounds || bounds.width === 0 || bounds.height === 0) return;
+      const margin = 32;
+      const fitted = Math.min(
+        (width - margin * 2) / bounds.width,
+        (height - margin * 2) / bounds.height,
+      );
+      // A projector must never shrink the drawing below its natural size —
+      // a tall layout is scrolled, not squinted at.
+      const k = Math.min(Math.max(fitted, projectorRef.current ? 1 : 0.3), 4);
+      const tx = width / 2 - k * (bounds.x + bounds.width / 2);
+      const ty = height / 2 - k * (bounds.y + bounds.height / 2);
+      sel
+        .transition()
+        .duration(400)
+        .call(zoom.transform, d3.zoomIdentity.translate(tx, ty).scale(k));
+    };
 
     // If restoring from shared URL, apply the saved camera transform
     if (isRestoring) {
@@ -250,7 +286,7 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
     // Decade headings — the sequence layout's stand-in for the decade rings.
     if (layoutMode === "birthOrder") {
       const headings = g.append("g").attr("class", "decade-headings");
-      const bands = computeSequenceDecades(nodes, width, height);
+      const bands = computeSequenceDecades(nodes, width, height, textScale);
       const bandRight = Math.max(...nodes.map((n) => n.x ?? 0), cx);
       for (const band of bands) {
         const left = band.x + cx - SEQ_COL_WIDTH / 2;
@@ -258,24 +294,24 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
         headings
           .append("text")
           .attr("x", left)
-          .attr("y", top + 20)
+          .attr("y", top + 20 * textScale)
           .attr("fill", "#8b93a7")
-          .attr("font-size", 17)
+          .attr("font-size", 17 * textScale)
           .attr("font-weight", 600)
           .text(`${band.decade}'erne`);
         headings
           .append("text")
-          .attr("x", left + 96)
-          .attr("y", top + 20)
+          .attr("x", left + 96 * textScale)
+          .attr("y", top + 20 * textScale)
           .attr("fill", "#4a4f63")
-          .attr("font-size", 11)
+          .attr("font-size", 11 * textScale)
           .text(band.count === 1 ? "1 familie" : `${band.count} familier`);
         headings
           .append("line")
           .attr("x1", left)
           .attr("x2", Math.max(bandRight, left + SEQ_COL_WIDTH))
-          .attr("y1", top + 32)
-          .attr("y2", top + 32)
+          .attr("y1", top + 32 * textScale)
+          .attr("y2", top + 32 * textScale)
           .attr("stroke", "#23263a")
           .attr("stroke-width", 1);
       }
@@ -328,7 +364,7 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
     // Circle for each node
     nodeSel
       .append("circle")
-      .attr("r", (d) => GEN_RADII[Math.min(d.generation, GEN_RADII.length - 1)])
+      .attr("r", radiusOf)
       .attr("fill", (d) => {
         const color = GEN_COLORS[Math.min(d.generation, GEN_COLORS.length - 1)];
         return d.isSingle ? color + "33" : color;
@@ -341,13 +377,14 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
       .append("text")
       .attr("class", "node-label")
       .attr("text-anchor", "middle")
-      .attr("dy", (d) => -(GEN_RADII[Math.min(d.generation, GEN_RADII.length - 1)] + 4))
+      .attr("dy", (d) => -(radiusOf(d) + 4 * textScale))
       .attr("fill", "#e0e0e0")
-      .attr("font-size", 10)
+      .attr("font-size", 10 * textScale)
       .attr("display", showLabels ? null : "none")
       .text((d) => {
         const fp = d.fabriciusPerson;
         const pp = d.partnerPerson;
+        if (projector) return pp ? `${fp.firstName} & ${pp.firstName}` : fp.firstName;
         if (!pp) return `${fp.firstName} ${fp.lastName}`;
         return `${fp.firstName} ${fp.lastName} & ${pp.firstName} ${pp.lastName}`;
       });
@@ -357,9 +394,9 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
       .append("text")
       .attr("class", "node-sublabel")
       .attr("text-anchor", "middle")
-      .attr("dy", (d) => GEN_RADII[Math.min(d.generation, GEN_RADII.length - 1)] + 13)
+      .attr("dy", (d) => radiusOf(d) + 13 * textScale)
       .attr("fill", "#777")
-      .attr("font-size", 8)
+      .attr("font-size", 8 * textScale)
       .attr("display", showLabels ? null : "none")
       .text((d) => `'${String(d.birthYear).slice(2)}`);
 
@@ -376,7 +413,7 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
           .id((d) => d.coupleId)
           .strength(0.1),
       )
-      .force("collision", d3.forceCollide<WheelNode>((d) => GEN_RADII[Math.min(d.generation, GEN_RADII.length - 1)] + 8))
+      .force("collision", d3.forceCollide<WheelNode>((d) => radiusOf(d) + 8 * nodeScale))
       .force(
         "x",
         d3.forceX<WheelNode>((d) => (positions.get(d.coupleId)?.x ?? 0) + cx).strength(0.3),
@@ -463,7 +500,7 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
     return () => {
       simulation.stop();
     };
-  }, [localData, rootCoupleId, getLayout, editMode, restoredState]);
+  }, [localData, rootCoupleId, getLayout, editMode, restoredState, projector]);
 
   // Toggle label visibility without rebuilding
   useEffect(() => {
@@ -522,6 +559,26 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
   useEffect(() => {
     highlightRef.current?.(selectedId);
   }, [selectedId]);
+
+  useEffect(() => {
+    const k = zoomScaleRef.current;
+    labelSelRef.current?.attr("transform", projector ? null : `scale(${1 / k})`);
+    sublabelSelRef.current?.attr("transform", projector ? null : `scale(${1 / k})`);
+
+    const url = new URL(window.location.href);
+    if (projector) url.searchParams.set("projektor", "1");
+    else url.searchParams.delete("projektor");
+    window.history.replaceState(null, "", url);
+
+    if (projector) fitRef.current?.();
+  }, [projector]);
+
+  // Refit whenever the drawing changes shape underneath a projector.
+  useEffect(() => {
+    if (!projector) return;
+    const id = setTimeout(() => fitRef.current?.(), 450);
+    return () => clearTimeout(id);
+  }, [projector, layoutMode, showLabels, localData]);
 
   useEffect(() => {
     graphRef.current = null;
@@ -585,7 +642,9 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
       {/* Title */}
       <div className="absolute top-5 left-5 z-10">
         <h1 className="text-lg font-semibold text-white">Fabricius Familiehjul</h1>
-        <p className="text-sm text-gray-500">Tryk og flyt frit — brug knapperne til at sortere</p>
+        {!projector && (
+          <p className="text-sm text-gray-500">Tryk og flyt frit — brug knapperne til at sortere</p>
+        )}
         <button
           onClick={handleEditToggle}
           className={`mt-2 px-3 py-1.5 rounded-md text-xs border transition-colors ${
@@ -633,6 +692,17 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
           }`}
         >
           Ringe
+        </button>
+        <button
+          onClick={() => setProjector((v) => !v)}
+          title="Fylder skærmen og forstørrer teksten"
+          className={`px-3 py-1.5 rounded-md text-xs border transition-colors ${
+            projector
+              ? "bg-amber-500 border-amber-500 text-black font-medium"
+              : "bg-[#1e2030] border-[#2a2d3e] text-gray-400 hover:bg-[#2a2d3e] hover:text-white"
+          }`}
+        >
+          Projektor
         </button>
         <button
           onClick={async () => {
