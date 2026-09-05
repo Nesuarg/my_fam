@@ -706,6 +706,30 @@
 			"gender": "male",
 			"dob": "2/25/2012",
 			"age": 14
+		},
+		{
+			"id": "victor",
+			"firstName": "Victor",
+			"lastName": "Johannesen",
+			"gender": "male",
+			"dob": "2/10/2001",
+			"age": 25
+		},
+		{
+			"id": "emma-2",
+			"firstName": "Emma",
+			"lastName": "Johannesen",
+			"gender": "female",
+			"dob": "6/20/2003",
+			"age": 23
+		},
+		{
+			"id": "oscar",
+			"firstName": "Oscar",
+			"lastName": "Johannesen",
+			"gender": "male",
+			"dob": "7/1/2010",
+			"age": 16
 		}
 	],
 	"couples": [
@@ -1154,7 +1178,21 @@
 			"id": "mette-christian",
 			"person1Id": "mette-christian-wife",
 			"person2Id": "christian-mette-husband",
-			"relationshipType": "married"
+			"relationshipType": "married",
+			"children": [
+				{
+					"personId": "victor",
+					"birthOrder": 1
+				},
+				{
+					"personId": "emma-2",
+					"birthOrder": 2
+				},
+				{
+					"personId": "oscar",
+					"birthOrder": 3
+				}
+			]
 		},
 		{
 			"id": "simon-trine",
