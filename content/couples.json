@@ -265,7 +265,7 @@
 		{
 			"id": "niels-johannes-son",
 			"firstName": "Niels",
-			"lastName": "Johannesen",
+			"lastName": "Fabricius Hansen",
 			"age": 45,
 			"gender": "male",
 			"dob": "2/13/1979"
@@ -273,7 +273,7 @@
 		{
 			"id": "ingvild",
 			"firstName": "Ingvild",
-			"lastName": "Johannesen",
+			"lastName": "Fabricius Hansen",
 			"maidenName": "Berg",
 			"age": 45,
 			"gender": "female",
@@ -734,7 +734,7 @@
 		{
 			"id": "jesper-2",
 			"firstName": "Jesper",
-			"lastName": "Johannesen",
+			"lastName": "Fabricius Hansen",
 			"gender": "male",
 			"dob": "11/5/2008",
 			"age": 17
@@ -742,7 +742,7 @@
 		{
 			"id": "ida",
 			"firstName": "Ida",
-			"lastName": "Johannesen",
+			"lastName": "Fabricius Hansen",
 			"gender": "female",
 			"dob": "8/14/2010",
 			"age": 16
