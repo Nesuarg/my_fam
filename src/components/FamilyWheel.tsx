@@ -16,6 +16,7 @@ import { applyDiffs } from "@/lib/view-state/diff";
 import { applyAddChild, applyAddCouple, applyDeleteNode, applyEditPerson, countDeletion } from "@/lib/family-edits";
 import { getStoredPassword, storePassword, addChild as apiAddChild, addCouple as apiAddCouple, editPerson as apiEditPerson, deleteNode as apiDeleteNode, validatePassword } from "@/lib/family-api";
 import PasswordModal from "./PasswordModal";
+import AssistantPanel from "./AssistantPanel";
 import EditPanel from "./EditPanel";
 import SyncBadge from "./SyncBadge";
 
@@ -59,6 +60,7 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
   const [password, setPassword] = useState<string | null>(getStoredPassword);
   const [localData, setLocalData] = useState<FamilyData>(familyData);
   const [editNode, setEditNode] = useState<{ node: WheelNode; x: number; y: number } | null>(null);
+  const [showAssistant, setShowAssistant] = useState(false);
   const [syncTimestamp, setSyncTimestamp] = useState<number | null>(null);
 
   const [projector, setProjector] = useState(
@@ -587,6 +589,7 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
     if (editMode) {
       setEditMode(false);
       setEditNode(null);
+      setShowAssistant(false);
       return;
     }
     const stored = getStoredPassword();
@@ -665,6 +668,26 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
           {editMode ? "Afslut redigering" : "Rediger"}
         </button>
         <SyncBadge editTimestamp={syncTimestamp} siteId={import.meta.env.PUBLIC_NETLIFY_SITE_ID ?? ""} />
+        {editMode && (
+          <button
+            onClick={() => setShowAssistant((v) => !v)}
+            className={`mt-2 ml-2 rounded-md border transition-colors ${projector ? "px-5 py-2.5 text-base" : "px-3 py-1.5 text-xs"} ${
+              showAssistant
+                ? "bg-blue-600 border-blue-600 text-white"
+                : "bg-[#1e2030] border-[#2a2d3e] text-gray-400 hover:bg-[#2a2d3e] hover:text-white"
+            }`}
+          >
+            Tilføj med ord
+          </button>
+        )}
+        {editMode && showAssistant && password && (
+          <AssistantPanel
+            password={password}
+            large={projector}
+            onApply={handleAddChild}
+            onClose={() => setShowAssistant(false)}
+          />
+        )}
       </div>
 
       {/* Layout mode buttons + label toggle */}

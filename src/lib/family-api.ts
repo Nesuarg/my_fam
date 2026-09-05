@@ -80,3 +80,28 @@ export async function editPerson(
 export async function deleteNode(password: string, nodeId: string): Promise<ApiResponse> {
   return callApi(password, { action: "deleteNode", nodeId });
 }
+
+export interface AssistantProposal {
+  type: "proposal";
+  coupleId: string;
+  child: { firstName: string; lastName: string; gender: "male" | "female" | "other"; dob: string };
+  summary: string;
+}
+
+export type AssistantReply = { type: "question"; question: string } | AssistantProposal;
+
+export async function askAssistant(
+  password: string,
+  turns: { role: "user" | "assistant"; content: string }[],
+): Promise<{ ok: true; reply: AssistantReply } | { ok: false; message: string }> {
+  const res = await fetch("/.netlify/functions/family-assistant", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "X-Family-Password": password },
+    body: JSON.stringify({ turns }),
+  });
+  if (!res.ok && res.status !== 400 && res.status !== 501) {
+    return { ok: false, message: `Assistenten svarede ${res.status}` };
+  }
+  const body = await res.json();
+  return body.ok ? { ok: true, reply: body.reply } : { ok: false, message: body.message ?? "Ukendt fejl" };
+}
