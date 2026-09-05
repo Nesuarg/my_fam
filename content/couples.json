@@ -882,6 +882,22 @@
 			"gender": "female",
 			"dob": "8/13/1987",
 			"age": 39
+		},
+		{
+			"id": "michela",
+			"firstName": "Michela",
+			"lastName": "Sonne",
+			"gender": "female",
+			"dob": "7/17/2018",
+			"age": 8
+		},
+		{
+			"id": "anna-bella",
+			"firstName": "Anna Bella",
+			"lastName": "Sonne",
+			"gender": "female",
+			"dob": "9/7/2023",
+			"age": 2
 		}
 	],
 	"couples": [
@@ -1215,7 +1231,8 @@
 			"children": [
 				{
 					"personId": "naomi",
-					"birthOrder": 1
+					"birthOrder": 1,
+					"ownFamilyId": "naomi-single"
 				},
 				{
 					"personId": "uno",
@@ -1474,6 +1491,22 @@
 				},
 				{
 					"personId": "malek",
+					"birthOrder": 2
+				}
+			]
+		},
+		{
+			"id": "naomi-single",
+			"person1Id": "naomi",
+			"person2Id": null,
+			"relationshipType": "single",
+			"children": [
+				{
+					"personId": "michela",
+					"birthOrder": 1
+				},
+				{
+					"personId": "anna-bella",
 					"birthOrder": 2
 				}
 			]
