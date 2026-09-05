@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { computeWheelLayout, computeSequenceLayout, computeBranchSizeLayout, computeTreeLayout } from "./wheel-layouts";
+import { computeWheelLayout, computeSequenceLayout, computeSequenceDecades, computeBranchSizeLayout, computeTreeLayout } from "./wheel-layouts";
 import type { WheelNode } from "./wheel-graph";
 
 function makeNode(overrides: Partial<WheelNode>): WheelNode {
@@ -62,40 +62,71 @@ describe("computeSequenceLayout", () => {
 
   it("orders by the older half of a couple, not by the first-listed person", () => {
     const root = makeNode({ coupleId: "root", generation: 0, birthYear: 1919 });
-    // "young" is listed first at 1960 but is married to someone born 1940.
+    // "young" is listed first at 1968 but is married to someone born 1942,
+    // which puts the couple in the 1940s alongside "mid".
     const young = makeNode({
-      coupleId: "young", generation: 1, birthYear: 1960, parentCoupleId: "root",
-      fabriciusPerson: person("1/1/1960"), partnerPerson: person("1/1/1940"),
+      coupleId: "young", generation: 1, birthYear: 1968, parentCoupleId: "root",
+      fabriciusPerson: person("1/1/1968"), partnerPerson: person("1/1/1942"),
     });
     const mid = makeNode({
-      coupleId: "mid", generation: 1, birthYear: 1950, parentCoupleId: "root",
-      fabriciusPerson: person("1/1/1950"), partnerPerson: null,
+      coupleId: "mid", generation: 1, birthYear: 1946, parentCoupleId: "root",
+      fabriciusPerson: person("1/1/1946"), partnerPerson: null,
     });
 
     const positions = computeSequenceLayout([root, young, mid], 1919, 2000, 800);
 
-    // young's couple is anchored at 1940, so it precedes mid (1950).
+    // Anchored at 1942, young precedes mid (1946) in the same decade block.
+    expect(positions.get("young")!.y).toBe(positions.get("mid")!.y);
     expect(positions.get("young")!.x).toBeLessThan(positions.get("mid")!.x);
   });
 
   it("reads left to right, then wraps to the next row", () => {
+    // All four in the 1940s, so only the column count can wrap them.
     const nodes = [
-      makeNode({ coupleId: "root", generation: 0, birthYear: 1919, fabriciusPerson: person("1/1/1919") }),
-      makeNode({ coupleId: "a", generation: 1, birthYear: 1940, parentCoupleId: "root", fabriciusPerson: person("1/1/1940") }),
-      makeNode({ coupleId: "b", generation: 1, birthYear: 1950, parentCoupleId: "root", fabriciusPerson: person("1/1/1950") }),
-      makeNode({ coupleId: "c", generation: 1, birthYear: 1960, parentCoupleId: "root", fabriciusPerson: person("1/1/1960") }),
+      makeNode({ coupleId: "w", generation: 1, birthYear: 1941, fabriciusPerson: person("1/1/1941") }),
+      makeNode({ coupleId: "x", generation: 1, birthYear: 1943, fabriciusPerson: person("1/1/1943") }),
+      makeNode({ coupleId: "y", generation: 1, birthYear: 1945, fabriciusPerson: person("1/1/1945") }),
+      makeNode({ coupleId: "z", generation: 1, birthYear: 1947, fabriciusPerson: person("1/1/1947") }),
     ];
     // Narrow enough that only two columns fit.
     const positions = computeSequenceLayout(nodes, 1919, 520, 800);
 
-    const root = positions.get("root")!;
-    const a = positions.get("a")!;
-    const b = positions.get("b")!;
+    const w = positions.get("w")!;
+    const x = positions.get("x")!;
+    const y = positions.get("y")!;
 
-    expect(a.x).toBeGreaterThan(root.x);   // same row, further right
-    expect(a.y).toBe(root.y);
-    expect(b.y).toBeGreaterThan(a.y);      // wrapped to the next row
-    expect(b.x).toBe(root.x);              // back to the first column
+    expect(x.x).toBeGreaterThan(w.x);   // same row, further right
+    expect(x.y).toBe(w.y);
+    expect(y.y).toBeGreaterThan(x.y);   // wrapped to the next row
+    expect(y.x).toBe(w.x);              // back to the first column
+  });
+
+  it("starts a new block for each decade", () => {
+    const nodes = [
+      makeNode({ coupleId: "a", generation: 1, birthYear: 1943, fabriciusPerson: person("1/1/1943") }),
+      makeNode({ coupleId: "b", generation: 1, birthYear: 1948, fabriciusPerson: person("1/1/1948") }),
+      makeNode({ coupleId: "c", generation: 1, birthYear: 1951, fabriciusPerson: person("1/1/1951") }),
+    ];
+    // Wide enough for all three side by side, so only the decade can wrap them.
+    const positions = computeSequenceLayout(nodes, 1919, 2000, 800);
+
+    expect(positions.get("b")!.y).toBe(positions.get("a")!.y);      // same decade, same row
+    expect(positions.get("c")!.y).toBeGreaterThan(positions.get("a")!.y); // 1950s starts lower
+    expect(positions.get("c")!.x).toBe(positions.get("a")!.x);      // back to the first column
+  });
+
+  it("reports a heading per decade, in order, above its rows", () => {
+    const nodes = [
+      makeNode({ coupleId: "a", generation: 1, birthYear: 1943, fabriciusPerson: person("1/1/1943") }),
+      makeNode({ coupleId: "c", generation: 1, birthYear: 1951, fabriciusPerson: person("1/1/1951") }),
+    ];
+    const decades = computeSequenceDecades(nodes, 2000, 800);
+    const positions = computeSequenceLayout(nodes, 1919, 2000, 800);
+
+    expect(decades.map((d) => d.decade)).toEqual([1940, 1950]);
+    expect(decades[0].y).toBeLessThan(positions.get("a")!.y);
+    expect(decades[1].y).toBeLessThan(positions.get("c")!.y);
+    expect(decades[1].y).toBeGreaterThan(positions.get("a")!.y);
   });
 
   it("gives every node a distinct slot", () => {

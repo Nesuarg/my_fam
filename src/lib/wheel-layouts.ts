@@ -120,21 +120,32 @@ function coupleBirthYear(node: WheelNode): number {
 /** Slot geometry for the sequence layout. Wide enough for a two-name label. */
 const SEQ_COL_WIDTH = 210;
 const SEQ_ROW_HEIGHT = 84;
+const SEQ_HEADING_HEIGHT = 60;
 const SEQ_PADDING = 48;
+
+export interface SequenceDecade {
+  decade: number;
+  y: number;
+  /** Left edge of the block, so a heading can sit flush with the first column. */
+  x: number;
+  count: number;
+}
+
+interface SequenceLayout {
+  positions: Map<string, Position>;
+  decades: SequenceDecade[];
+}
 
 /**
  * Lays everyone out as a reading sequence — oldest first, left to right,
- * wrapping into rows. Couples stay on one slot, anchored to the older partner.
- * Branch links are meaningless here; the UI reveals relatives on click instead.
+ * wrapping into rows, with each decade starting its own block under a heading.
+ * Couples stay on one slot, anchored to the older partner. Branch links are
+ * meaningless here; the UI reveals relatives on click instead.
  */
-export function computeSequenceLayout(
-  nodes: WheelNode[],
-  _rootBirthYear: number,
-  width: number,
-  height: number,
-): Map<string, Position> {
+function layoutSequence(nodes: WheelNode[], width: number, height: number): SequenceLayout {
   const positions = new Map<string, Position>();
-  if (nodes.length === 0) return positions;
+  const decades: SequenceDecade[] = [];
+  if (nodes.length === 0) return { positions, decades };
 
   const ordered = [...nodes].sort(
     (a, b) => coupleBirthYear(a) - coupleBirthYear(b) || a.coupleId.localeCompare(b.coupleId),
@@ -142,22 +153,62 @@ export function computeSequenceLayout(
 
   const usable = Math.max(width - SEQ_PADDING * 2, SEQ_COL_WIDTH);
   const columns = Math.max(1, Math.floor(usable / SEQ_COL_WIDTH));
-  const rows = Math.ceil(ordered.length / columns);
 
-  // Centre the block so it sits in the middle of the viewport.
-  const blockWidth = Math.min(ordered.length, columns) * SEQ_COL_WIDTH;
-  const blockHeight = rows * SEQ_ROW_HEIGHT;
-  const originX = -blockWidth / 2 + SEQ_COL_WIDTH / 2;
-  const originY = -blockHeight / 2 + SEQ_ROW_HEIGHT / 2;
-
-  for (let i = 0; i < ordered.length; i++) {
-    positions.set(ordered[i].coupleId, {
-      x: originX + (i % columns) * SEQ_COL_WIDTH,
-      y: originY + Math.floor(i / columns) * SEQ_ROW_HEIGHT,
-    });
+  const groups = new Map<number, WheelNode[]>();
+  for (const node of ordered) {
+    const decade = Math.floor(coupleBirthYear(node) / 10) * 10;
+    const members = groups.get(decade) ?? [];
+    members.push(node);
+    groups.set(decade, members);
   }
 
-  return positions;
+  // Measure first so the whole block can be centred vertically.
+  const orderedDecades = [...groups.keys()].sort((a, b) => a - b);
+  const rowsPerDecade = orderedDecades.map((d) => Math.ceil(groups.get(d)!.length / columns));
+  const blockHeight = rowsPerDecade.reduce(
+    (total, rows) => total + SEQ_HEADING_HEIGHT + rows * SEQ_ROW_HEIGHT,
+    0,
+  );
+
+  const widestBlock = Math.min(ordered.length, columns) * SEQ_COL_WIDTH;
+  const originX = -widestBlock / 2 + SEQ_COL_WIDTH / 2;
+  let cursorY = -blockHeight / 2;
+
+  for (let i = 0; i < orderedDecades.length; i++) {
+    const decade = orderedDecades[i];
+    const members = groups.get(decade)!;
+
+    decades.push({ decade, y: cursorY, x: originX, count: members.length });
+    cursorY += SEQ_HEADING_HEIGHT;
+
+    for (let j = 0; j < members.length; j++) {
+      positions.set(members[j].coupleId, {
+        x: originX + (j % columns) * SEQ_COL_WIDTH,
+        y: cursorY + Math.floor(j / columns) * SEQ_ROW_HEIGHT,
+      });
+    }
+    cursorY += rowsPerDecade[i] * SEQ_ROW_HEIGHT;
+  }
+
+  return { positions, decades };
+}
+
+export function computeSequenceLayout(
+  nodes: WheelNode[],
+  _rootBirthYear: number,
+  width: number,
+  height: number,
+): Map<string, Position> {
+  return layoutSequence(nodes, width, height).positions;
+}
+
+/** Decade headings for the sequence layout, in center-origin coordinates. */
+export function computeSequenceDecades(
+  nodes: WheelNode[],
+  width: number,
+  height: number,
+): SequenceDecade[] {
+  return layoutSequence(nodes, width, height).decades;
 }
 
 export function computeBranchSizeLayout(

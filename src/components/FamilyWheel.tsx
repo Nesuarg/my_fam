@@ -5,6 +5,7 @@ import { buildWheelGraph, type WheelNode, type WheelLink } from "@/lib/wheel-gra
 import {
   computeWheelLayout,
   computeSequenceLayout,
+  computeSequenceDecades,
   computeBranchSizeLayout,
   computeTreeLayout,
   computeBaselinePositions,
@@ -22,6 +23,8 @@ import SyncBadge from "./SyncBadge";
 // so anything reading them after the simulation starts must accept both.
 const endpointId = (end: string | WheelNode): string =>
   typeof end === "string" ? end : end.coupleId;
+
+const SEQ_COL_WIDTH = 210;
 
 const GEN_COLORS = ["#f59e0b", "#3b82f6", "#10b981", "#8b5cf6", "#ec4899"];
 const GEN_RADII = [22, 15, 12, 10, 9];
@@ -244,6 +247,40 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
         .text(String(decade));
     }
 
+    // Decade headings — the sequence layout's stand-in for the decade rings.
+    if (layoutMode === "birthOrder") {
+      const headings = g.append("g").attr("class", "decade-headings");
+      const bands = computeSequenceDecades(nodes, width, height);
+      const bandRight = Math.max(...nodes.map((n) => n.x ?? 0), cx);
+      for (const band of bands) {
+        const left = band.x + cx - SEQ_COL_WIDTH / 2;
+        const top = band.y + cy;
+        headings
+          .append("text")
+          .attr("x", left)
+          .attr("y", top + 20)
+          .attr("fill", "#8b93a7")
+          .attr("font-size", 17)
+          .attr("font-weight", 600)
+          .text(`${band.decade}'erne`);
+        headings
+          .append("text")
+          .attr("x", left + 96)
+          .attr("y", top + 20)
+          .attr("fill", "#4a4f63")
+          .attr("font-size", 11)
+          .text(band.count === 1 ? "1 familie" : `${band.count} familier`);
+        headings
+          .append("line")
+          .attr("x1", left)
+          .attr("x2", Math.max(bandRight, left + SEQ_COL_WIDTH))
+          .attr("y1", top + 32)
+          .attr("y2", top + 32)
+          .attr("stroke", "#23263a")
+          .attr("stroke-width", 1);
+      }
+    }
+
     // Links
     const linkSel = g
       .append("g")
@@ -461,10 +498,18 @@ export default function FamilyWheel({ familyData, rootCoupleId }: Props) {
     const cy = height / 2;
     const positions = getLayout(graph.nodes, width, height);
 
-    // Unpin all nodes so they animate to new layout positions
+    // The sequence is a grid, so nodes hold their slots exactly; the other
+    // layouts let the simulation settle them.
+    const pinToGrid = layoutMode === "birthOrder";
     for (const node of graph.nodes) {
-      node.fx = null;
-      node.fy = null;
+      const pos = positions.get(node.coupleId);
+      if (pinToGrid && pos) {
+        node.fx = pos.x + cx;
+        node.fy = pos.y + cy;
+      } else {
+        node.fx = null;
+        node.fy = null;
+      }
     }
 
     sim
