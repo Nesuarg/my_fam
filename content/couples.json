@@ -802,6 +802,14 @@
 			"gender": "female",
 			"dob": "6/15/2010",
 			"age": 16
+		},
+		{
+			"id": "karen-esther",
+			"firstName": "Karen Esther",
+			"lastName": "Christensen",
+			"gender": "female",
+			"dob": "9/18/2026",
+			"age": 0
 		}
 	],
 	"couples": [
@@ -1217,7 +1225,13 @@
 			"id": "signe-kasper",
 			"person1Id": "signe",
 			"person2Id": "kasper",
-			"relationshipType": "married"
+			"relationshipType": "married",
+			"children": [
+				{
+					"personId": "karen-esther",
+					"birthOrder": 1
+				}
+			]
 		},
 		{
 			"id": "bjorn-anne",
