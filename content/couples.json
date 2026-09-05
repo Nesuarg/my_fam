@@ -754,6 +754,30 @@
 			"gender": "male",
 			"dob": "5/29/2021",
 			"age": 5
+		},
+		{
+			"id": "maria",
+			"firstName": "Maria",
+			"lastName": "Thomsen",
+			"gender": "female",
+			"dob": "7/26/1990",
+			"age": 36
+		},
+		{
+			"id": "toby",
+			"firstName": "Toby",
+			"lastName": "Thomsen",
+			"gender": "male",
+			"dob": "6/20/2014",
+			"age": 12
+		},
+		{
+			"id": "malek",
+			"firstName": "Malek",
+			"lastName": "Thomsen",
+			"gender": "male",
+			"dob": "1/1/2018",
+			"age": 8
 		}
 	],
 	"couples": [
@@ -892,7 +916,8 @@
 			"children": [
 				{
 					"personId": "emil",
-					"birthOrder": 1
+					"birthOrder": 1,
+					"ownFamilyId": "emil-maria"
 				},
 				{
 					"personId": "simon",
@@ -1270,6 +1295,22 @@
 			"person1Id": "michael",
 			"person2Id": "sofie",
 			"relationshipType": "married"
+		},
+		{
+			"id": "emil-maria",
+			"person1Id": "emil",
+			"person2Id": "maria",
+			"relationshipType": "married",
+			"children": [
+				{
+					"personId": "toby",
+					"birthOrder": 1
+				},
+				{
+					"personId": "malek",
+					"birthOrder": 2
+				}
+			]
 		}
 	]
 }
