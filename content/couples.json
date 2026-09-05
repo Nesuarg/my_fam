@@ -778,6 +778,22 @@
 			"gender": "male",
 			"dob": "1/1/2018",
 			"age": 8
+		},
+		{
+			"id": "ellie",
+			"firstName": "Ellie",
+			"lastName": "Thomsen",
+			"gender": "female",
+			"dob": "1/18/2016",
+			"age": 10
+		},
+		{
+			"id": "jonathan",
+			"firstName": "Jonathan",
+			"lastName": "Thomsen",
+			"gender": "male",
+			"dob": "11/2/2018",
+			"age": 7
 		}
 	],
 	"couples": [
@@ -1263,7 +1279,17 @@
 			"id": "simon-trine",
 			"person1Id": "simon",
 			"person2Id": "trine",
-			"relationshipType": "married"
+			"relationshipType": "married",
+			"children": [
+				{
+					"personId": "ellie",
+					"birthOrder": 1
+				},
+				{
+					"personId": "jonathan",
+					"birthOrder": 2
+				}
+			]
 		},
 		{
 			"id": "thomas-single",
